@@ -19,65 +19,105 @@ pygame.display.set_icon(icon)
 class Game:
 
     def __init__(self):
+        self.p1_name = "Player 1"
+        self.p2_name = "Player 2"
+
+        self.p1_ready = False
+        self.p2_ready = False
+
+        self.p1_timer = Timer(600, "bot")
+        self.p2_timer = Timer(600, "top")
+
+        self.p1_color = WHITE
+        self.p2_color = BLACK
+
         self.board = Board()
         self.board.initialize_tiles()
         self.board.reset_pieces()
-        #self.menu_screen()
-        self.start_game()
+
+        self.menu_screen()
+        #self.start_game()
 
     def menu_screen(self):
-        t1 = Timer(600, "top")
-        t2 = Timer(600, "bot")
+        p1_ready_button = pygame.Rect(BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*4+8, 28)
+        p2_ready_button = pygame.Rect(BOARD_X+BOARD_SIZE+8, BOARD_Y-8-28, TILE_SIZE*4+8, 28)
 
         running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+                    if p1_ready_button.collidepoint(mouse_pos):
+                        self.p1_ready = not self.p1_ready
+                    if p2_ready_button.collidepoint(mouse_pos):
+                        self.p2_ready = not self.p2_ready
 
             SCREEN.fill(BLACK)
 
-            # draw top name
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X, BOARD_Y - 36, TILE_SIZE*2, 28])
-            p1name = pygame.font.SysFont('menlottc', 18).render("???", True, GREEN)
-            SCREEN.blit(p1name, (BOARD_X+4, BOARD_Y - 32))
-
-            # draw top captured pieces
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X+TILE_SIZE*2+8, BOARD_Y - 36, TILE_SIZE*5-16, 28])
-            # count number of pieces of a type in player.captured_pieces --> [pawn-img] x 0
-
-            # draw top ready button
-            # if p1.ready
-            pygame.draw.rect(SCREEN, GREEN, [BOARD_X+BOARD_SIZE+8, BOARD_Y-8-28, TILE_SIZE*4+8, 28])
-            txt = pygame.font.SysFont('menlottc', 18).render("READY", True, BLACK)
-            # else
-            #pygame.draw.rect(SCREEN, RED, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*4+8, 28])
-            #txt = pygame.font.SysFont('menlottc', 18).render("NOT READY", True, BLACK)
-            SCREEN.blit(txt, (BOARD_X+TILE_SIZE*7+4 + ((TILE_SIZE*4+8)/1.6), BOARD_Y-4-28))
-
-            # draw bottom name
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*2, 28])
-            p2name = pygame.font.SysFont('menlottc', 18).render("Troy", True, GREEN)
-            SCREEN.blit(p2name, (BOARD_X+4, BOARD_Y+BOARD_SIZE+12))
-
-            # draw bottom captured pieces
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X+TILE_SIZE*2+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*5-16, 28])
-
-            # draw bottom READY button
-            pygame.draw.rect(SCREEN, RED, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*4+8, 28])
-            txt = pygame.font.SysFont('menlottc', 18).render("NOT READY", True, BLACK)
-            SCREEN.blit(txt, (BOARD_X+TILE_SIZE*7+4 + ((TILE_SIZE*4+8)/1.8), BOARD_Y+BOARD_SIZE+12))
+            # draw names
+            self.draw_name("top")
+            self.draw_name("bot")
 
             # draw clocks
-            t1.draw()
-            t2.draw()
+            self.p1_timer.draw()
+            self.p2_timer.draw()
+
+            # draw ready buttons
+            self.draw_ready("top")
+            self.draw_ready("bot")
 
             # draw settings area
             pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y, TILE_SIZE*4+8, TILE_SIZE*8])
 
+            # draw board
             self.board.update()
+
+            # start game if both players ready
+            if self.p1_ready and self.p2_ready:
+                self.start_game()
+
             pygame.display.flip()
         pygame.quit()
+
+    def draw_name(self, pos):
+
+        # draw top name
+        if pos == "top":
+            pygame.draw.rect(SCREEN, GREY, [BOARD_X, BOARD_Y - 36, TILE_SIZE*2, 28])
+            p1name = pygame.font.SysFont('menlottc', 18).render(self.p2_name, True, GREEN)
+            SCREEN.blit(p1name, (BOARD_X+4, BOARD_Y - 32))
+        else:
+            pygame.draw.rect(SCREEN, GREY, [BOARD_X, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*2, 28])
+            p2name = pygame.font.SysFont('menlottc', 18).render(self.p1_name, True, GREEN)
+            SCREEN.blit(p2name, (BOARD_X+4, BOARD_Y+BOARD_SIZE+12))
+
+    def draw_ready(self, pos):
+        if pos == "top":
+            if self.p2_ready:
+                pygame.draw.rect(SCREEN, GREEN, [BOARD_X+BOARD_SIZE+8, BOARD_Y-8-28, TILE_SIZE*4+8, 28])
+                txt = pygame.font.SysFont('menlottc', 18).render("READY", True, BLACK)
+                SCREEN.blit(txt, (BOARD_X+TILE_SIZE*7+4 + ((TILE_SIZE*4+8)/1.6), BOARD_Y-4-28))
+            else:
+                pygame.draw.rect(SCREEN, RED, [BOARD_X+BOARD_SIZE+8, BOARD_Y-8-28, TILE_SIZE*4+8, 28])
+                txt = pygame.font.SysFont('menlottc', 18).render("NOT READY", True, BLACK)
+                SCREEN.blit(txt, (BOARD_X+TILE_SIZE*7+4 + ((TILE_SIZE*4+8)/1.8), BOARD_Y-4-28))
+        else:
+            if self.p1_ready:
+                pygame.draw.rect(SCREEN, GREEN, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*4+8, 28])
+                txt = pygame.font.SysFont('menlottc', 18).render("READY", True, BLACK)
+                SCREEN.blit(txt, (BOARD_X+TILE_SIZE*7+4 + ((TILE_SIZE*4+8)/1.6), BOARD_Y+BOARD_SIZE+12))
+            else:
+                pygame.draw.rect(SCREEN, RED, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*4+8, 28])
+                txt = pygame.font.SysFont('menlottc', 18).render("NOT READY", True, BLACK)
+                SCREEN.blit(txt, (BOARD_X+TILE_SIZE*7+4 + ((TILE_SIZE*4+8)/1.8), BOARD_Y+BOARD_SIZE+12))
+
+    def draw_draw(self):
+        pass
+
+    def draw_resign(self):
+        pass
 
     def set_difficulty(self, value, difficulty):
         pass
@@ -88,8 +128,6 @@ class Game:
         clock = pygame.time.Clock()
         playing = True
 
-        t1 = Timer(600, "top")
-        t2 = Timer(600, "bot")
         dt = 0
 
         while playing:
@@ -102,44 +140,42 @@ class Game:
 
             SCREEN.fill(BLACK)
 
+            # decrement timer for player of current turn
             if self.board.human == WHITE:
-                t2.tick(dt)
+                self.p2_timer.tick(dt)
             else:
-                t1.tick(dt)
+                self.p1_timer.tick(dt)
 
-            t1.draw()
-            t2.draw()
+            # draw names
+            self.draw_name("top")
+            self.draw_name("bot")
 
-            # draw top name
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X, BOARD_Y - 36, TILE_SIZE*2, 28])
-            p1name = pygame.font.SysFont('menlottc', 18).render("Opponent", True, GREEN)
-            SCREEN.blit(p1name, (BOARD_X+4, BOARD_Y - 32))
+            # # draw captured pieces
+            # pygame.draw.rect(SCREEN, GREY, [BOARD_X+TILE_SIZE*2+8, BOARD_Y - 36, TILE_SIZE*5-16, 28])
+            # pygame.draw.rect(SCREEN, GREY, [BOARD_X+TILE_SIZE*2+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*5-16, 28])
+            # # count number of pieces of a type in player.captured_pieces --> [pawn-img] x 0
 
-            # draw top captured pieces
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X+TILE_SIZE*2+8, BOARD_Y - 36, TILE_SIZE*5-16, 28])
-            # count number of pieces of a type in player.captured_pieces --> [pawn-img] x 0
-
-            # draw bottom name
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*2, 28])
-            p2name = pygame.font.SysFont('menlottc', 18).render("Troy", True, GREEN)
-            SCREEN.blit(p2name, (BOARD_X+4, BOARD_Y+BOARD_SIZE+12))
-
-            # draw bottom captured pieces
-            pygame.draw.rect(SCREEN, GREY, [BOARD_X+TILE_SIZE*2+8, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*5-16, 28])
+            # draw turn indicator
+            if self.board.turn == self.p1_color:
+                txt = pygame.font.SysFont('menlottc', 18).render("YOUR TURN", True, RED)
+                SCREEN.blit(txt, (BOARD_X+TILE_SIZE*3+8, BOARD_Y+BOARD_SIZE+12))
+            else:
+                txt = pygame.font.SysFont('menlottc', 18).render("THEIR TURN", True, RED)
+                SCREEN.blit(txt, (BOARD_X+TILE_SIZE*3+8, BOARD_Y+BOARD_SIZE+12))
 
             # draw clocks
-            t1.draw()
-            t2.draw()
+            self.p1_timer.draw()
+            self.p2_timer.draw()
 
             # draw settings area
             pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y, TILE_SIZE*4+8, TILE_SIZE*8])
 
             # Timout occurred
-            if t1.time <= 0 or t2.time <= 0:
+            if self.p1_timer.time <= 0 or self.p2_timer.time <= 0:
                 # TIMEOUT
                 print("TIMEOUT!")
-                t1.time = 999
-                t2.time = 999
+                self.p1_timer.time = 999
+                self.p2_timer.time = 999
                 pass
 
             dt = clock.tick(30) / 1000
