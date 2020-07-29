@@ -128,6 +128,16 @@ class Game:
         clock = pygame.time.Clock()
         playing = True
 
+        # initialize draw variables
+        p1_draw_offered = False
+        p2_draw_offered = False
+
+        p1_resigned = False
+
+        # create buttons
+        draw_button = pygame.Rect(BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, (TILE_SIZE*4+8)/2-4, 28)
+        resign_button = pygame.Rect(BOARD_X+BOARD_SIZE+8+(TILE_SIZE*4+8)/2+4, BOARD_Y+BOARD_SIZE+8, (TILE_SIZE*4+8)/2-4, 28)
+
         dt = 0
 
         while playing:
@@ -137,6 +147,12 @@ class Game:
                     playing = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.board.select()
+                    mouse_pos = event.pos
+                    if draw_button.collidepoint(mouse_pos):
+                        p1_draw_offered = not p1_draw_offered
+                    if resign_button.collidepoint(mouse_pos):
+                        p1_resigned = True
+
 
             SCREEN.fill(BLACK)
 
@@ -170,12 +186,36 @@ class Game:
             # draw settings area
             pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y, TILE_SIZE*4+8, TILE_SIZE*8])
 
-            # Timout occurred
+            # draw 'draw' button
+            if p1_draw_offered:
+                pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, (TILE_SIZE*4+8)/2-4, 28])
+                txt = pygame.font.SysFont('menlottc', 18).render("Offered", True, GREEN)
+                SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+32, BOARD_Y+BOARD_SIZE+12))
+            else:
+                pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, (TILE_SIZE*4+8)/2-4, 28])
+                txt = pygame.font.SysFont('menlottc', 18).render("Offer Draw", True, GREEN)
+                SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+16, BOARD_Y+BOARD_SIZE+12))
+
+            # draw 'resign' button
+            pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8+(TILE_SIZE*4+8)/2+4, BOARD_Y+BOARD_SIZE+8, (TILE_SIZE*4+8)/2-4, 28])
+            txt = pygame.font.SysFont('menlottc', 18).render("Resign", True, GREEN)
+            SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+8+(TILE_SIZE*4+8)/2+36, BOARD_Y+BOARD_SIZE+12))
+
+            # Game end: Timout
             if self.p1_timer.time <= 0 or self.p2_timer.time <= 0:
                 # TIMEOUT
-                print("TIMEOUT!")
+                print("GAME OVER: Timeout")
                 self.p1_timer.time = 999
                 self.p2_timer.time = 999
+
+            # Game over: Draw
+            if p1_draw_offered and p2_draw_offered:
+                print("GAME OVER: Draw")
+                pass
+
+            # Game over: Resignation
+            if p1_resigned:
+                print("GAME OVER: Resignation")
                 pass
 
             dt = clock.tick(30) / 1000

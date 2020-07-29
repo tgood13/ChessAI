@@ -366,9 +366,9 @@ class Board:
                         if not self.in_check_after_move((self.tilemap[x][y].piece.x, self.tilemap[x][y].piece.y), move, self.tilemap[x][y].piece.color):
                             legal_moves += 1
         if legal_moves == 0 and not self.in_check(BLACK):           # CHANGE TO OPPONENT's COLOR
-            print("GAME OVER: STALEMATE")
+            print("GAME OVER: Stalemate")
         elif legal_moves == 0:
-            print("GAME OVER: CHECKMATE")
+            print("GAME OVER: Checkmate")
         return legal_moves == 0
 
     def check_win_conditions(self):
@@ -377,11 +377,6 @@ class Board:
 
         # checkmate
         self.checkmate()
-
-        # timeout
-
-
-        # resignation
 
         # DRAW CONDITIONS #
         # stalemate
