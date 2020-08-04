@@ -4,19 +4,24 @@ from settings import *
 
 class Timer:
     def __init__(self, time, pos):
+        self.initial_time = time
         self.time = time
         self.pos = pos
-        self.font = pygame.font.SysFont('menlottc', 18)
+        #self.font = pygame.font.SysFont('menlottc', 18)
+        self.font = pygame.font.Font(pygame.font.get_default_font(), 18)
 
     def tick(self, dt):
         self.time -= dt
+
+    def reset(self):
+        self.time = self.initial_time
 
     def draw(self):
         mins, secs = divmod(self.time, 60)
         ms = divmod(self.time, 1000)[1]
         s = ''
         if self.time <= 10:
-            s = f'{ms:.02f}'
+            s = f'{ms:.01f}'
         else:
             s = f'{int(mins):02}:{int(secs):02}'
         txt = self.font.render(s, True, GREEN)

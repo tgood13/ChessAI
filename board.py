@@ -17,9 +17,10 @@ class Board:
         self.blackKingCoords = None
         self.whiteKingCoords = None
         self.turn = WHITE
-        self.human = WHITE
+        self.playerpos = "bot"
+        self.player = WHITE
 
-    def reset_pieces(self) -> None:
+    def initialize_pieces(self) -> None:
         """
         places all tiles in the correct starting position
         """
@@ -64,7 +65,7 @@ class Board:
         self.blackKingCoords = (4, 0)
         self.whiteKingCoords = (4, 7)
 
-        if self.human == BLACK:
+        if self.player == BLACK:
             self.blackKingCoords = (4, 7)
             self.whiteKingCoords = (4, 0)
             for x in range(8):
@@ -266,7 +267,7 @@ class Board:
                             return True
         return False
 
-    def in_check_after_move(self, source, dest, color):
+    def in_check_after_move(self, source, dest, color) -> bool:
         """
         returns True if player of specified color is in check after a move from source to dest
         """
@@ -298,6 +299,12 @@ class Board:
             else:
                 self.whiteKingCoords = (destTile.piece.x, destTile.piece.y)
 
+        # set playerpos
+        if self.playerpos == "bot":
+            self.playerpos = "top"
+        else:
+            self.playerpos = "bot"
+
         # see if in check state after move
         if self.in_check(color):
             in_check = True
@@ -309,6 +316,12 @@ class Board:
             else:
                 self.whiteKingCoords = kingCoords
 
+        # restore playerpos
+        if self.playerpos == "bot":
+            self.playerpos = "top"
+        else:
+            self.playerpos = "bot"
+
         # move piece back
         sourceTile.piece = sourcePiece
         destTile.piece = destPiece
@@ -316,7 +329,7 @@ class Board:
 
         return in_check
 
-    def can_castle(self, color):
+    def can_castle(self, color) -> bool:
         """
         returns list of castling moves if player of specified color can castle
         """
@@ -345,18 +358,18 @@ class Board:
                     moves.append((6, 0))
         return moves
 
-    def next_turn(self):
+    def next_turn(self) -> None:
         if self.turn == WHITE:
             self.turn = BLACK
         else:
             self.turn = WHITE
 
-        if self.human == WHITE:
-            self.human = BLACK
+        if self.playerpos == "bot":
+            self.playerpos = "top"
         else:
-            self.human = WHITE
+            self.playerpos = "bot"
 
-    def checkmate(self):
+    def checkmate(self) -> bool:
         legal_moves = 0
         for x in range(8):
             for y in range(8):
@@ -371,20 +384,18 @@ class Board:
             print("GAME OVER: Checkmate")
         return legal_moves == 0
 
-    def check_win_conditions(self):
-
-        # WIN/LOSE CONDITIONS #
-
-        # checkmate
-        self.checkmate()
-
-        # DRAW CONDITIONS #
-        # stalemate
-
-        # insufficient material
-        piece_counts = {"minor": 0, "king": 0, "knight": 0}
-        for x in range(8):
-            for y in range(8):
-                piece = self.tilemap[x][y].piece
-                if type(piece) is King:
-                    piece_counts["king"] += 1
+    # def check_win_conditions(self):
+    #
+    #     # checkmate
+    #     self.checkmate()
+    #
+    #     # DRAW CONDITIONS #
+    #     # stalemate
+    #
+    #     # insufficient material
+    #     piece_counts = {"minor": 0, "king": 0, "knight": 0}
+    #     for x in range(8):
+    #         for y in range(8):
+    #             piece = self.tilemap[x][y].piece
+    #             if type(piece) is King:
+    #                 piece_counts["king"] += 1

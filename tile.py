@@ -9,6 +9,9 @@ class Tile:
         self.color = BLACK
         self.surface = pygame.Surface((TILE_SIZE, TILE_SIZE))
 
+    def __repr__(self):
+        return f"Tile ({self.x}, {self.y})"
+
     def fill(self, color):
         self.surface.fill(color)
 
