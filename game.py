@@ -1,8 +1,8 @@
-import pygame
-import piece
-from settings import *
 from board import *
 from timer import Timer
+from math import inf
+
+import AI
 
 pygame.init()
 
@@ -33,7 +33,8 @@ class Game:
         self.board = Board()
         self.board.initialize_pieces()
 
-        self.pregame_screen()
+        self.game_screen()
+        #self.menu_screen()
 
     def reset(self):
         self.p2_name = "Player 2"
@@ -46,16 +47,38 @@ class Game:
         self.board = Board()
         self.board.initialize_pieces()
 
+    def menu_screen(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    try:
+                        self.board = self.connect()
+                        running = False
+                        self.pregame_screen()
+                        break
+                    except:
+                        print("Offline")
+                        running = False
+            #self.board.update()
+            pygame.display.flip()
+
     def pregame_screen(self):
 
         # create ready buttons
         p1_ready_button = pygame.Rect(BOARD_X+TILE_SIZE*3, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*3, 28)
         p2_ready_button = pygame.Rect(BOARD_X+TILE_SIZE*3, BOARD_Y-8-28, TILE_SIZE*3, 28)
 
+        print(self.board.get_moves())
+        print(len(self.board.get_moves()))
+
         running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    pygame.quit()
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = event.pos
@@ -91,7 +114,6 @@ class Game:
                 self.game_screen()
 
             pygame.display.flip()
-        pygame.quit()
 
     def draw_names(self):
         # draw top name (player 2)
@@ -202,6 +224,11 @@ class Game:
             txt = FONT.render("Resign", True, GREEN)
             SCREEN.blit(txt, (int(BOARD_X+BOARD_SIZE+8+(TILE_SIZE*4+8)/2+36), BOARD_Y+BOARD_SIZE+12))
 
+            if self.board.gameover:
+                playing = False
+                print("GAME OVER")
+                self.end_screen(self.board.gameover, self.p2_name)
+
             # Game over: Timeout
             if self.p1_timer.time <= 0:
                 playing = False
@@ -233,6 +260,17 @@ class Game:
                 self.end_screen("Resignation", self.p1_name)
 
             dt = clock.tick(30) / 1000
+
+            if self.board.turn == self.p2_color:
+                random_move = AI.random_move(self.board)
+                #print(AI.minimax(self.board.copy(), 3, True))
+                random_move = AI.minimax(self.board, 3, -inf, inf, False)[0]
+                #print(AI.evaluate(self.board))
+                self.board.move_piece(random_move[0], random_move[1])
+
+                self.board.next_turn()
+            else:
+                pass
 
             self.board.update()
 
@@ -266,6 +304,7 @@ class Game:
                     if rematch_button.collidepoint(mouse_pos):
                         running = False
                         self.board.initialize_pieces()
+                        self.board.gameover = None
                         self.p1_timer.reset()
                         self.p2_timer.reset()
                         self.game_screen()
@@ -303,4 +342,6 @@ class Game:
             SCREEN.blit(txt, (bg.centerx+20, bg.bottom-28+4))
 
             pygame.display.flip()
+
+
 g = Game()

@@ -17,42 +17,56 @@ H_w = pygame.image.load(os.path.join("img", "knight-white.png"))
 R_w = pygame.image.load(os.path.join("img", "rook-white.png"))
 P_w = pygame.image.load(os.path.join("img", "pawn-white.png"))
 
+IMAGES = [pygame.transform.scale(K_w, IMG_SCALE),
+          pygame.transform.scale(K_b, IMG_SCALE),
+          pygame.transform.scale(Q_w, IMG_SCALE),
+          pygame.transform.scale(Q_b, IMG_SCALE),
+          pygame.transform.scale(B_w, IMG_SCALE),
+          pygame.transform.scale(B_b, IMG_SCALE),
+          pygame.transform.scale(H_w, IMG_SCALE),
+          pygame.transform.scale(H_b, IMG_SCALE),
+          pygame.transform.scale(R_w, IMG_SCALE),
+          pygame.transform.scale(R_b, IMG_SCALE),
+          pygame.transform.scale(P_w, IMG_SCALE),
+          pygame.transform.scale(P_b, IMG_SCALE)]
+
 
 class Piece:
 
-    def __init__(self, x, y, color, mini=False):
+    def __init__(self, x, y, color):
         self.x = x
         self.y = y
         self.color = color
-        self.images = None
+        self.image = None
         self.firstMove = True
-        self.scale = 64
-        if mini:
-            self.scale = 32
 
     def draw(self):
         if self.color == WHITE:
-            SCREEN.blit(self.images[0], to_coords(self.x, self.y))
+            SCREEN.blit(IMAGES[self.image], to_coords(self.x, self.y))
         else:
-            SCREEN.blit(self.images[1], to_coords(self.x, self.y))
+            SCREEN.blit(IMAGES[self.image+1], to_coords(self.x, self.y))
 
     def move(self, x, y):
         self.x = x
         self.y = y
+
+    def copy(self):
+        copy = type(self)(self.x, self.y, self.color)
+        copy.image = self.image
+        copy.firstMove = self.firstMove
+        return copy
 
 
 class King(Piece):
 
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
-        self.images = (pygame.transform.scale(K_w, (self.scale, self.scale)),
-                       pygame.transform.scale(K_b, (self.scale, self.scale)))
+        self.image = 0
 
     def __repr__(self):
         return "King"
 
     def valid_moves(self, board):
-
         moves = []
 
         # move 1 in each direction
@@ -67,8 +81,7 @@ class Queen(Piece):
 
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
-        self.images = (pygame.transform.scale(Q_w, (self.scale, self.scale)),
-                       pygame.transform.scale(Q_b, (self.scale, self.scale)))
+        self.image = 2
 
     def __repr__(self):
         return "Queen"
@@ -85,14 +98,12 @@ class Bishop(Piece):
 
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
-        self.images = (pygame.transform.scale(B_w, (self.scale, self.scale)),
-                       pygame.transform.scale(B_b, (self.scale, self.scale)))
+        self.image = 4
 
     def __repr__(self):
         return "Bishop"
 
     def valid_moves(self, board):
-
         moves = []
 
         # up left
@@ -138,16 +149,15 @@ class Knight(Piece):
 
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
-        self.images = (pygame.transform.scale(H_w, (self.scale, self.scale)),
-                       pygame.transform.scale(H_b, (self.scale, self.scale)))
+        self.image = 6
 
     def __repr__(self):
         return "Knight"
 
     def valid_moves(self, board):
-
         moves = []
 
+        # move 1 diagonal, 1 straight
         for x in range(self.x-2, self.x+3):
             for y in range(self.y-2, self.y+3):
                 if abs(self.x - x) == 2 and abs(self.y - y) == 1 or abs(self.x - x) == 1 and abs(self.y - y) == 2:
@@ -160,14 +170,12 @@ class Rook(Piece):
 
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
-        self.images = (pygame.transform.scale(R_w, (self.scale, self.scale)),
-                       pygame.transform.scale(R_b, (self.scale, self.scale)))
+        self.image = 8
 
     def __repr__(self):
         return "Rook"
 
     def valid_moves(self, board):
-
         moves = []
 
         # up
@@ -205,16 +213,15 @@ class Pawn(Piece):
 
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
-        self.images = (pygame.transform.scale(P_w, (self.scale, self.scale)),
-                       pygame.transform.scale(P_b, (self.scale, self.scale)))
+        self.image = 10
 
     def __repr__(self):
         return "Pawn"
 
     def valid_moves(self, board):
-
         moves = []
-        if board.playerpos == "bot":
+
+        if board.bottomPlayerTurn:
             # move forward 1
             if board.valid_move((self.x, self.y-1), self.color) \
                     and not board.piece_at_coords((self.x, self.y-1)):
@@ -257,4 +264,4 @@ class Pawn(Piece):
                     and board.enemy_at_coords((self.x+1, self.y+1), self.color):
                 moves.append((self.x+1, self.y+1))
 
-        return moves
+        return list(set(moves))

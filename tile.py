@@ -1,3 +1,4 @@
+import pygame
 from settings import *
 
 
@@ -8,9 +9,6 @@ class Tile:
         self.y = y
         self.color = BLACK
         self.surface = pygame.Surface((TILE_SIZE, TILE_SIZE))
-
-    def __repr__(self):
-        return f"Tile ({self.x}, {self.y})"
 
     def fill(self, color):
         self.surface.fill(color)
@@ -26,6 +24,14 @@ class Tile:
             self.piece.draw()
 
     def contains_piece(self):
-        if self.piece.images is None:
+        if self.piece.image is None:
             return False
         return True
+
+    def copy(self):
+        piece = None
+        if self.piece:
+            piece = self.piece.copy()
+        copy = Tile(piece, self.x, self.y)
+        copy.fill(self.color)
+        return copy
