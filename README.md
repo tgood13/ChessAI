@@ -10,6 +10,7 @@ An offline singleplayer chess game. Players can enter their name, select their c
 
 ## How it works
 ### Main Objects
+The code functions through the interaction of several objects
 - Piece = an abstract base class from which all board pieces are derived (King, Queen, Bishop, Knight, Rook, Pawn)
 - Tile = a class which represents a single cell on the chess board; each tile may or may not contain a piece
 - Board = a class which contains all game states necessary to ensure proper game functioning, and most importantly, it contains a tilemap atrribute which consists of all the tiles contained within the board
