@@ -479,12 +479,12 @@ class Board:
         else:
             opponent = WHITE
 
-        if legal_moves == 0 and not self.in_check(opponent):           # CHANGE TO OPPONENT's COLOR
+        if legal_moves == 0 and not self.in_check(opponent):
             print("GAME OVER: Stalemate")
-            self.gameover = "Stalemate"
+            self.gameover = ("Stalemate", None)
         elif legal_moves == 0:
             print("GAME OVER: Checkmate")
-            self.gameover = "Checkmate"
+            self.gameover = ("Checkmate", self.turn)
         return legal_moves == 0
 
     def get_moves(self):

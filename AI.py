@@ -3,6 +3,8 @@ from math import inf
 from piece import *
 
 def random_move(board):
+    # if board.gameover:
+    #     print(board.gameover)
     return random.choice(board.get_moves())
 
 def evaluate(board):
