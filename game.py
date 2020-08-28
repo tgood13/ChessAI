@@ -251,11 +251,11 @@ class Game:
                     move = AI.random_move(self.board)
                 self.board.move_piece(move[0], move[1])
                 self.board.next_turn()
-            # else:
-            #     #move = AI.minimax(self.board, 1, -inf, inf, False)[0]
-            #     move = AI.random_move(self.board)
-            #     self.board.move_piece(move[0], move[1])
-            #     self.board.next_turn()
+            else:
+                #move = AI.minimax(self.board, 1, -inf, inf, False)[0]
+                move = AI.random_move(self.board)
+                self.board.move_piece(move[0], move[1])
+                self.board.next_turn()
 
             self.board.update()
 

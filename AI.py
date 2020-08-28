@@ -3,9 +3,9 @@ from math import inf
 from piece import *
 
 def random_move(board):
-    # if board.gameover:
-    #     print(board.gameover)
-    return random.choice(board.get_moves())
+    moves = board.get_moves()
+    if moves:
+        return random.choice(moves)
 
 def evaluate(board):
 
