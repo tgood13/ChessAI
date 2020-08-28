@@ -15,6 +15,7 @@ An offline singleplayer chess game. Players can enter their name, select their c
 - Board = a class which contains all game states necessary to ensure proper game functioning, and most importantly, it contains a tilemap atrribute which consists of all the tiles contained within the board
 
 ### AI
+===
 #### Random
 - Randomly selects a move from its available valid moves
 #### Minimax
