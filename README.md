@@ -8,11 +8,10 @@ An offline singleplayer chess game. Players can enter their name, select their c
 - pygame
 - pygame-menu
 
-## Features
-- Users may play against either a random-move AI or a minimax
-
 ## How it works
+### Definitions
+- 
 
 ## Known Bugs
 - No En passant rule for pawns
-- 
+- AI moves too quickly
