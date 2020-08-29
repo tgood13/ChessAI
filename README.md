@@ -28,4 +28,11 @@ An offline singleplayer chess game. Players can enter their name, select their c
 - AI moves too quickly which makes the timers unfair in a Human vs AI matchup
 
 ## How it looks
+### Menu Screen
 ![Menu Screen](https://i.paste.pics/72e25f4fe4a7aa99f819036dc9589f2e.png)
+### Pregame Screen
+![Pregame Screen](https://i.paste.pics/33c5307704db97eead65fca9f69dcf9d.png)
+### Game Screen
+![Game Screen](https://i.paste.pics/8d9048407588d62cc119e507ac91a8dd.png)
+### End Screen
+![End Screen](https://i.paste.pics/c9031f2c4048ea16589a5874146e3600.png)
