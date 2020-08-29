@@ -5,14 +5,14 @@ from settings import *
 
 class Board:
 
-    def __init__(self):
+    def __init__(self, player_color):
         self.tilemap = [[None for _ in range(8)] for _ in range(8)]
         self.initialize_tiles()
         self.selected = None
         self.blackKingCoords = None
         self.whiteKingCoords = None
         self.turn = WHITE
-        self.player = WHITE
+        self.player = player_color
         if self.player == WHITE:
             self.bottomPlayerTurn = True
         else:
@@ -26,9 +26,10 @@ class Board:
         # self.previousState = None
 
     def initialize_pieces(self) -> None:
-        """
+        '''
         places all tiles in the correct starting position
-        """
+        :return: None
+        '''
 
         # remove all pieces from board
         for x in range(8):
@@ -83,9 +84,10 @@ class Board:
                             self.tilemap[x][y].piece.color = BLACK
 
     def initialize_tiles(self) -> None:
-        """
+        '''
         sets the tile grid for the chess board
-        """
+        :return: None
+        '''
         cnt = 0
         for x in range(8):
             for y in range(8):
@@ -101,9 +103,10 @@ class Board:
             cnt += 1
 
     def update(self) -> None:
-        """
+        '''
         draws all components of the board
-        """
+        :return: None
+        '''
 
         # draw tiles and pieces
         for row in self.tilemap:
@@ -127,9 +130,10 @@ class Board:
         #     print("White is in check!")
 
     def select(self) -> None:
-        """
+        '''
         selects tile that contains the mouse pointer if tile is valid
-        """
+        :return: None
+        '''
 
         # get position of mouse
         pos = pygame.mouse.get_pos()
@@ -195,9 +199,12 @@ class Board:
             self.selected = self.tilemap[x][y]
 
     def move_piece(self, source, dest) -> None:
-        """
+        '''
         moves piece from source coords to dest coords and makes necessary updates to game state
-        """
+        :param source: coordinates of tile that piece is moving from
+        :param dest: coordinates of tile that piece is moving to
+        :return: None
+        '''
         # self.previousState = Board()
         #
         # for x in range(8):
@@ -281,18 +288,12 @@ class Board:
 
         self.checkmate()
 
-    # def undo_move(self):
-    #     self.tilemap = self.previousState.tilemap
-    #     self.selected = self.previousState.selected
-    #     self.blackKingCoords = self.previousState.blackKingCoords
-    #     self.whiteKingCoords = self.previousState.whiteKingCoords
-    #     self.turn = self.previousState.turn
-    #     self.bottomPlayerTurn = self.previousState.bottomPlayerTurn
-    #     self.player = self.previousState.player
-    #     self.gameover = self.previousState.gameover
-
     def copy(self):
-        copy = Board()
+        '''
+        creates a deep copy of the current board
+        :return: Board
+        '''
+        copy = Board(self.player)
         for x in range(8):
             for y in range(8):
                 if self.piece_at_coords((x, y)):
@@ -311,29 +312,42 @@ class Board:
 
     @staticmethod
     def in_bounds(coords) -> bool:
-        """
-        returns True if given coords are within the bounds of the board
-        """
+        '''
+        returns True if given coordinates are within the bounds of the board
+        :param coords: coords to be checked (tuple)
+        :return: bool
+        '''
         if coords[0] < 0 or coords[0] >= 8 or coords[1] < 0 or coords[1] >= 8:
             return False
         return True
 
     def piece_at_coords(self, coords) -> bool:
-        """
-        returns True if tile at coords contains a piece of any kind
-        """
+        '''
+        returns True if tile at coordinates contains a piece of any kind
+        :param coords: coords to be checked (tuple)
+        :return: bool
+        '''
         if self.tilemap[coords[0]][coords[1]].piece is None:
             return False
         return True
 
     def enemy_at_coords(self, coords, color) -> bool:
-        """
+        '''
         returns True if color of the piece at coords is not same as specified color
-        """
+        :param coords: coords to be checked (tuple)
+        :param color: color of current player (tuple)
+        :return: bool
+        '''
         if self.piece_at_coords(coords):
             return self.tilemap[coords[0]][coords[1]].piece.color != color
 
     def count(self, color, piece):
+        '''
+        returns count of a particular piece for a given player color
+        :param color: color of player to count pieces for (tuple)
+        :param piece: piece that is being counted (Piece)
+        :return: int
+        '''
         cnt = 0
         for x in range(8):
             for y in range(8):
@@ -343,18 +357,23 @@ class Board:
         return cnt
 
     def valid_move(self, dest, color) -> bool:
-        """
+        '''
         returns True if move to dest coords is within board's bounds and not obstructed
-        """
+        :param dest: coordinates of tile that is being moved to (tuple)
+        :param color: color of player that is moving (tuple)
+        :return: bool
+        '''
         if self.in_bounds(dest) \
                 and (not self.piece_at_coords(dest) or self.enemy_at_coords(dest, color)):
             return True
         return False
 
     def in_check(self, color) -> bool:
-        """
+        '''
         returns True if player of specified color is in check
-        """
+        :param color: color of player to check (tuple)
+        :return: bool
+        '''
         kingCoords = None
         if color == BLACK:
             kingCoords = self.blackKingCoords
@@ -372,9 +391,13 @@ class Board:
         return False
 
     def in_check_after_move(self, source, dest, color) -> bool:
-        """
+        '''
         returns True if player of specified color is in check after a move from source to dest
-        """
+        :param source: coordinates of tile that is being moved from (tuple)
+        :param dest: coordinates of tile that is being moved to (tuple)
+        :param color: color of player that is moving (tuple)
+        :return: bool
+        '''
         in_check = False
 
         # get shorthand for source and destination tiles and pieces
@@ -427,10 +450,12 @@ class Board:
 
         return in_check
 
-    def can_castle(self, color) -> bool:
-        """
+    def can_castle(self, color) -> list:
+        '''
         returns list of castling moves if player of specified color can castle
-        """
+        :param color: color of player to check castling ability
+        :return: list
+        '''
         moves = []
         if color == WHITE:
             # make sure pieces are Rook/King, positions are correct, and that it is their first move
@@ -457,6 +482,10 @@ class Board:
         return moves
 
     def next_turn(self) -> None:
+        '''
+        switches turn of board to the other player
+        :return: None
+        '''
         if self.turn == WHITE:
             self.turn = BLACK
         else:
@@ -465,6 +494,10 @@ class Board:
         self.bottomPlayerTurn = not self.bottomPlayerTurn
 
     def checkmate(self) -> bool:
+        '''
+        checks for checkmate or stalemate status of board
+        :return: None
+        '''
         legal_moves = 0
         for x in range(8):
             for y in range(8):
@@ -488,6 +521,10 @@ class Board:
         return legal_moves == 0
 
     def get_moves(self):
+        '''
+        returns a list of the available moves for the current player
+        :return: list
+        '''
         moves = []
         for x in range(8):
             for y in range(8):
@@ -499,13 +536,6 @@ class Board:
         return list(set(moves))
 
     # def check_win_conditions(self):
-    #
-    #     # checkmate
-    #     self.checkmate()
-    #
-    #     # DRAW CONDITIONS #
-    #     # stalemate
-    #
     #     # insufficient material
     #     piece_counts = {"minor": 0, "king": 0, "knight": 0}
     #     for x in range(8):

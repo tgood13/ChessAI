@@ -9,12 +9,13 @@ import AI
 
 pygame.init()
 
-FONT = pygame.font.Font(pygame.font.get_default_font(), 18)
-BIG_FONT = pygame.font.Font(pygame.font.get_default_font(), 26)
+# Fonts
+FONT = pygame.font.Font(pygame_menu.font.FONT_NEVIS, 18)
+BIG_FONT = pygame.font.Font(pygame_menu.font.FONT_NEVIS, 26)
 
 # Title and Icon
-pygame.display.set_caption("Chess")
-icon = pygame.image.load('icon.png')
+pygame.display.set_caption("Good Chess")
+icon = pygame.image.load(os.path.join('img', 'icon.png'))
 pygame.display.set_icon(icon)
 
 
@@ -33,39 +34,82 @@ class Game:
         self.p1_color = WHITE
         self.p2_color = BLACK
 
-        self.board = Board()
+        self.board = Board(self.p1_color)
         self.board.initialize_pieces()
 
-        #self.pregame_screen()
-        #self.game_screen()
         self.menu_screen()
 
     def reset(self):
+        '''
+        resets board and makes changes to game state to prepare for new game
+        :return: None
+        '''
         self.p1_ready = False
         self.p2_ready = True
         self.p1_timer.reset()
         self.p2_timer.reset()
-        self.p1_color = WHITE
-        self.p2_color = BLACK
-        self.board = Board()
+        self.board = Board(self.p1_color)
+        self.board.initialize_pieces()
+
+    def set_name(self, name):
+        '''
+        sets name of human player
+        :param name: name of human player (str)
+        :return: None
+        '''
+        self.p1_name = name
+
+    def set_player_color(self, color, value):
+        '''
+        sets color of human player
+        :param color: color selected by player (str)
+        :param value: RGB representation of color (tuple)
+        :return: None
+        '''
+        self.board.player = value
+        self.p1_color = value
+        if value == WHITE:
+            self.p2_color = BLACK
+            self.board.bottomPlayerTurn = False
+        else:
+            self.p2_color = WHITE
+            self.board.bottomPlayerTurn = True
+        self.board = Board(value)
         self.board.initialize_pieces()
 
     def set_ai(self, tup, value):
+        '''
+        updates name of AI to correspond to underlying method of move choice
+        :param tup: tuple containing color as a string and as an RGB tuple (tuple)
+        :param value: numerical value representing AI (int)
+        :return: None
+        '''
         self.p2_name = tup[0]
-        # self.p2_ready = True
-
-    def set_name(self, name):
-        self.p1_name = name
 
     def menu_screen(self):
-        theme = pygame_menu.themes.Theme(title_bar_style=pygame_menu.widgets.MENUBAR_STYLE_NONE)
-        theme.widget_font = pygame_menu.font.FONT_NEVIS
-        menu = pygame_menu.Menu(SCREEN_HEIGHT, SCREEN_WIDTH, 'Welcome', theme=theme)
+        '''
+        displays menu screen
+        :return: None
+        '''
+        theme = pygame_menu.themes.Theme(title_bar_style=pygame_menu.widgets.MENUBAR_STYLE_NONE,
+                                         menubar_close_button=False,
+                                         widget_font_color=GREEN,
+                                         background_color=BLACK,
+                                         widget_font=pygame_menu.font.FONT_NEVIS,
+                                         cursor_color=WHITE)
 
-        menu.add_text_input('Name : ', default=self.p1_name, onchange=self.set_name)
+        menu = pygame_menu.Menu(height=SCREEN_HEIGHT, width=SCREEN_WIDTH, title="", theme=theme, menu_position=(50, 0))
+        menu.add_label("Good", align=pygame_menu.locals.ALIGN_CENTER, font_name=pygame_menu.font.FONT_8BIT,
+                       font_color=WHITE, font_size=70)
+        menu.add_label("Chess", align=pygame_menu.locals.ALIGN_CENTER, font_name=pygame_menu.font.FONT_8BIT,
+                       font_color=WHITE, font_size=70, margin=(0, 50))
+        menu.add_text_input('Name : ', default=self.p1_name, maxchar=10, onchange=self.set_name)
+        menu.add_selector('Color : ', [('White', WHITE), ('Black', BLACK)], onchange=self.set_player_color)
         menu.add_selector('AI : ', [('Minimax', 1), ('Random', 2)], onchange=self.set_ai)
         menu.add_button('Play', self.pregame_screen)
         menu.add_button('Quit', pygame_menu.events.EXIT)
+        menu.add_label("", align=pygame_menu.locals.ALIGN_CENTER, font_color=BLACK, font_size=70, margin=(0, 50))
+        menu.center_content()
 
         running = True
         while running:
@@ -75,14 +119,18 @@ class Game:
 
             menu.mainloop(SCREEN)
 
-            #self.board.update()
             pygame.display.flip()
 
     def pregame_screen(self):
+        '''
+        displays pregame screen
+        :return: None
+        '''
 
-        # create ready buttons
+        # create buttons
         p1_ready_button = pygame.Rect(BOARD_X+TILE_SIZE*3, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*3, 28)
-        p2_ready_button = pygame.Rect(BOARD_X+TILE_SIZE*3, BOARD_Y-8-28, TILE_SIZE*3, 28)
+        #p2_ready_button = pygame.Rect(BOARD_X+TILE_SIZE*3, BOARD_Y-8-28, TILE_SIZE*3, 28)
+        leave_button = pygame.Rect(BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28)
 
         running = True
         while running:
@@ -94,6 +142,8 @@ class Game:
                     mouse_pos = event.pos
                     if p1_ready_button.collidepoint(mouse_pos):
                         self.p1_ready = not self.p1_ready
+                    if leave_button.collidepoint(mouse_pos):
+                        self.menu_screen()
                     # if p2_ready_button.collidepoint(mouse_pos):
                     #     self.p2_ready = not self.p2_ready
 
@@ -110,10 +160,9 @@ class Game:
             self.p2_timer.draw()
 
             # draw disconnect button
-
-
-            # draw settings area
-            # pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y, TILE_SIZE*4+8, TILE_SIZE*8])
+            pygame.draw.rect(SCREEN, GREY, [BOARD_X + BOARD_SIZE + 8, BOARD_Y + BOARD_SIZE + 8, int((TILE_SIZE * 4 + 8) / 2 - 4), 28])
+            txt = FONT.render("Leave", True, GREEN)
+            SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+44, BOARD_Y+BOARD_SIZE+12))
 
             # draw board
             self.board.update()
@@ -126,6 +175,10 @@ class Game:
             pygame.display.flip()
 
     def game_screen(self):
+        '''
+        displays game screen
+        :return: None
+        '''
 
         clock = pygame.time.Clock()
         playing = True
@@ -136,10 +189,8 @@ class Game:
         p1_resigned = False
         p2_resigned = False
 
-        # create buttons
-        # draw_button = pygame.Rect(BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28)
+        # create resign button
         resign_button = pygame.Rect(BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28)
-        # resign_button = pygame.Rect(int(BOARD_X+BOARD_SIZE+8+(TILE_SIZE*4+8)/2+4), BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28)
 
         dt = 0
 
@@ -169,39 +220,23 @@ class Game:
             self.draw_names()
 
             # draw turn indicator
-            # if self.board.turn == self.p1_color:
-            #     txt = FONT.render("YOUR TURN", True, RED)
-            #     SCREEN.blit(txt, (BOARD_X+TILE_SIZE*2+8, BOARD_Y+BOARD_SIZE+12))
-            # else:
-            #     txt = FONT.render("THEIR TURN", True, RED)
-            #     SCREEN.blit(txt, (BOARD_X+TILE_SIZE*2+8, BOARD_Y+BOARD_SIZE+12))
+            if self.board.turn == self.p1_color:
+                txt = FONT.render("YOUR TURN", True, RED)
+                SCREEN.blit(txt, (int(BOARD_X+TILE_SIZE*3.5+8), BOARD_Y+BOARD_SIZE+12))
+            else:
+                txt = FONT.render("THEIR TURN", True, RED)
+                SCREEN.blit(txt, (int(BOARD_X+TILE_SIZE*3.5+8), BOARD_Y+BOARD_SIZE+12))
 
             # draw clocks
             self.p1_timer.draw()
             self.p2_timer.draw()
 
-            # draw settings area
-            # pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y, TILE_SIZE*4+8, TILE_SIZE*8])
-
-            # # draw 'draw' button
-            # if p1_draw_offered:
-            #     pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28])
-            #     txt = FONT.render("Offered", True, GREEN)
-            #     SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+32, BOARD_Y+BOARD_SIZE+12))
-            # else:
-            #     pygame.draw.rect(SCREEN, GREY, [BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28])
-            #     txt = FONT.render("Offer Draw", True, GREEN)
-            #     SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+16, BOARD_Y+BOARD_SIZE+12))
-
-            # # draw 'resign' button
-            # pygame.draw.rect(SCREEN, GREY, [int(BOARD_X+BOARD_SIZE+8+(TILE_SIZE*4+8)/2+4), BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28])
-            # txt = FONT.render("Resign", True, GREEN)
-            # SCREEN.blit(txt, (int(BOARD_X+BOARD_SIZE+8+(TILE_SIZE*4+8)/2+36), BOARD_Y+BOARD_SIZE+12))
-
+            # draw resign button
             pygame.draw.rect(SCREEN, GREY, [BOARD_X + BOARD_SIZE + 8, BOARD_Y + BOARD_SIZE + 8, int((TILE_SIZE * 4 + 8) / 2 - 4), 28])
             txt = FONT.render("Resign", True, GREEN)
-            SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+16, BOARD_Y+BOARD_SIZE+12))
+            SCREEN.blit(txt, (BOARD_X+BOARD_SIZE+40, BOARD_Y+BOARD_SIZE+12))
 
+            # check if win condition has been met by either player
             if self.board.gameover:
                 playing = False
                 print("GAME OVER")
@@ -244,18 +279,21 @@ class Game:
 
             # AI makes its move
             if self.board.turn == self.p2_color:
-                move = None
+                if self.p2_color == BLACK:
+                    x = False
+                else:
+                    x = True
                 if self.p2_name == "Minimax":
-                    move = AI.minimax(self.board, 1, -inf, inf, False)[0]
+                    move = AI.minimax(self.board, 1, -inf, inf, x)[0]
                 else:
                     move = AI.random_move(self.board)
                 self.board.move_piece(move[0], move[1])
                 self.board.next_turn()
-            else:
-                #move = AI.minimax(self.board, 1, -inf, inf, False)[0]
-                move = AI.random_move(self.board)
-                self.board.move_piece(move[0], move[1])
-                self.board.next_turn()
+            # else:
+            #     #move = AI.minimax(self.board, 1, -inf, inf, False)[0]
+            #     move = AI.random_move(self.board)
+            #     self.board.move_piece(move[0], move[1])
+            #     self.board.next_turn()
 
             self.board.update()
 
@@ -263,11 +301,18 @@ class Game:
         pygame.quit()
 
     def end_screen(self, condition, winner=None):
+        '''
+        displays end screen
+        :param condition: string representing win condition that ended the game (str)
+        :param winner: name of winner if applicable (str)
+        :return: None
+        '''
 
         bg = pygame.Rect(int(BOARD_X+TILE_SIZE*2.5), int(BOARD_Y+TILE_SIZE*2.5), TILE_SIZE*3, TILE_SIZE*2)
         rematch_button = pygame.Rect(bg.left, bg.bottom-28, bg.centerx-bg.left-2, 28)
         leave_button = pygame.Rect(bg.centerx+2, bg.bottom-28, bg.centerx-bg.left-2, 28)
 
+        # creates fade transitional effect for end screen
         def fade(width, height):
             fade = pygame.Surface((width, height))
             fade.fill((0, 0, 0))
@@ -330,6 +375,10 @@ class Game:
             pygame.display.flip()
 
     def draw_names(self):
+        '''
+        draws names for both players
+        :return: None
+        '''
         # draw top name (player 2)
         pygame.draw.rect(SCREEN, GREY, [BOARD_X, BOARD_Y - 36, TILE_SIZE*2, 28])
         p1name = FONT.render(self.p2_name, True, GREEN)
@@ -340,6 +389,10 @@ class Game:
         SCREEN.blit(p2name, (BOARD_X+4, BOARD_Y+BOARD_SIZE+12))
 
     def draw_ready_buttons(self):
+        '''
+        draws ready buttons for both players
+        :return: None
+        '''
         if self.p2_ready:
             pygame.draw.rect(SCREEN, GREEN, [BOARD_X+TILE_SIZE*3, BOARD_Y-8-28, TILE_SIZE*3, 28])
             txt = FONT.render("READY", True, BLACK)
@@ -357,13 +410,5 @@ class Game:
             txt = FONT.render("NOT READY", True, BLACK)
             SCREEN.blit(txt, (int(BOARD_X+TILE_SIZE*3.7), BOARD_Y+BOARD_SIZE+12))
 
-            #pygame.draw.rect(SCREEN, WHITE, [BOARD_X+TILE_SIZE*3, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*3, 28])
-            #SCREEN.blit(pygame.transform.scale(K_b, (32, 32)), (BOARD_X+TILE_SIZE*4, BOARD_Y+BOARD_SIZE+8))
-
-    def draw_draw(self):
-        pass
-
-    def draw_resign(self):
-        pass
 
 Game()

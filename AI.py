@@ -2,25 +2,37 @@ import random
 from math import inf
 from piece import *
 
+
 def random_move(board):
+    '''
+    selects a random move from the valid moves for the current players turn
+    :param board: the current board being used for the game (Board)
+    :return: tuple representing move ((sourceX, sourceY), (destX, destY))
+    '''
     moves = board.get_moves()
     if moves:
         return random.choice(moves)
 
+
 def evaluate(board):
-
-    # materialScore = 900 * (board.count(WHITE, King)-board.count(BLACK, King)) \
-    #                 + 90 * (board.count(WHITE, Queen)-board.count(BLACK, Queen)) \
-    #                 + 50 * (board.count(WHITE, Rook)-board.count(BLACK, Rook)) \
-    #                 + 30 * (board.count(WHITE, Bishop)-board.count(BLACK, Bishop)) \
-    #                 + 30 * (board.count(WHITE, Knight)-board.count(BLACK, Knight)) \
-    #                 + 10 * (board.count(WHITE, Pawn)-board.count(BLACK, Pawn))
-
-
+    '''
+    provides a number representing the value of the board at a given state
+    :param board: the current board being used for the game (Board)
+    :return: integer representing boards value
+    '''
     return board.whiteScore - board.blackScore
 
 
 def minimax(board, depth, alpha, beta, maximizing_player):
+    '''
+    minimax algorithm used to find best move for the AI
+    :param board: the current board being used for the game (Board)
+    :param depth: controls how deep to search the tree of possible moves (int)
+    :param alpha: the best value that the maximizer currently can guarantee at that level or above (int)
+    :param beta: the best value that the minimizer currently can guarantee at that level or above (int)
+    :param maximizing_player: True if current player is maximizing player (bool)
+    :return: tuple representing move and eval (move, eval)
+    '''
     if depth == 0 or board.checkmate():
         return None, evaluate(board)
     moves = board.get_moves()
