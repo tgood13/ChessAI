@@ -23,10 +23,6 @@ An offline singleplayer chess game. Players can enter their name, select their c
 ### Random AI
 - Randomly selects a move from its available valid moves
 
-## Known Bugs
-- No En passant rule for pawns
-- AI moves too quickly which makes the timers unfair in a Human vs AI matchup
-
 ## How it looks
 ### Menu Screen
 ![Menu Screen](https://i.paste.pics/2a85bce419c3b4a6472399bd5c534129.png)
@@ -36,3 +32,7 @@ An offline singleplayer chess game. Players can enter their name, select their c
 ![Game Screen](https://i.paste.pics/3dbf11bbdd860606e20fd07158384d1f.png)
 ### End Screen
 ![End Screen](https://i.paste.pics/3988638a886560139ea1e6a74cf0d4fd.png)
+
+## Known Bugs
+- No En passant rule for pawns
+- AI moves too quickly which makes the timers unfair in a Human vs AI matchup
