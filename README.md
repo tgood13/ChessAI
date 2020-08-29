@@ -1,4 +1,4 @@
-# AI-Chess-Game
+# Good-Chess
 
 ## Description
 An offline singleplayer chess game. Players can enter their name, select their color, and select which AI to play against.
