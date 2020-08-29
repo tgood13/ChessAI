@@ -29,10 +29,10 @@ An offline singleplayer chess game. Players can enter their name, select their c
 
 ## How it looks
 ### Menu Screen
-![Menu Screen](https://i.paste.pics/72e25f4fe4a7aa99f819036dc9589f2e.png)
+![Menu Screen](https://i.paste.pics/2a85bce419c3b4a6472399bd5c534129.png)
 ### Pregame Screen
-![Pregame Screen](https://i.paste.pics/33c5307704db97eead65fca9f69dcf9d.png)
+![Pregame Screen](https://i.paste.pics/c3bebe6f37281c1e00ada487ba1bc32c.png)
 ### Game Screen
-![Game Screen](https://i.paste.pics/8d9048407588d62cc119e507ac91a8dd.png)
+![Game Screen](https://i.paste.pics/3dbf11bbdd860606e20fd07158384d1f.png)
 ### End Screen
-![End Screen](https://i.paste.pics/c9031f2c4048ea16589a5874146e3600.png)
+![End Screen](https://i.paste.pics/3988638a886560139ea1e6a74cf0d4fd.png)
