@@ -1,7 +1,8 @@
 # Good-Chess
+Note: The 'Good' in 'Good Chess' is there because it is my last name!
 
 ## Description
-A singleplayer chess game where players can enter their name, select their color, and select which AI to play against. The 'Good' in 'Good Chess' is there because it is my last name!
+A singleplayer chess game where players can enter their name, select their color, and select which AI to play against. For the textures, I handcrafted each chess piece pixel by pixel.
 
 ## Required:
 - Python 3.x
