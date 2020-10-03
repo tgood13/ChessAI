@@ -24,6 +24,6 @@ RED = (255, 0, 0)
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
-# Converts grid locations to pixel coordinates
+# Converts 8x8 grid locations to pixel coordinates
 def to_coords(x, y):
     return BOARD_X + x * TILE_SIZE, BOARD_Y + y * TILE_SIZE

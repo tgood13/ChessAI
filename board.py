@@ -2,6 +2,8 @@ from piece import *
 from tile import *
 from settings import *
 
+import AI
+
 
 class Board:
 
@@ -23,13 +25,13 @@ class Board:
         self.blackScore = 1290
         self.whiteScore = 1290
 
-        # self.previousState = None
+        self.previousState = {}
 
     def initialize_pieces(self) -> None:
-        '''
-        places all tiles in the correct starting position
+        """
+        places all pieces in the correct starting position
         :return: None
-        '''
+        """
 
         # remove all pieces from board
         for x in range(8):
@@ -84,10 +86,10 @@ class Board:
                             self.tilemap[x][y].piece.color = BLACK
 
     def initialize_tiles(self) -> None:
-        '''
+        """
         sets the tile grid for the chess board
         :return: None
-        '''
+        """
         cnt = 0
         for x in range(8):
             for y in range(8):
@@ -102,11 +104,11 @@ class Board:
                 cnt += 1
             cnt += 1
 
-    def update(self) -> None:
-        '''
+    def draw(self) -> None:
+        """
         draws all components of the board
         :return: None
-        '''
+        """
 
         # draw tiles and pieces
         for row in self.tilemap:
@@ -124,16 +126,12 @@ class Board:
                     y = tup[1] + int(TILE_SIZE / 2)
                     tup2 = x, y
                     pygame.draw.circle(SCREEN, GREEN, tup2, 10)
-        # if self.in_check(BLACK):
-        #     print("Black is in check!")
-        # if self.in_check(WHITE):
-        #     print("White is in check!")
 
     def select(self) -> None:
-        '''
+        """
         selects tile that contains the mouse pointer if tile is valid
         :return: None
-        '''
+        """
 
         # get position of mouse
         pos = pygame.mouse.get_pos()
@@ -199,29 +197,12 @@ class Board:
             self.selected = self.tilemap[x][y]
 
     def move_piece(self, source, dest) -> None:
-        '''
+        """
         moves piece from source coords to dest coords and makes necessary updates to game state
         :param source: coordinates of tile that piece is moving from
         :param dest: coordinates of tile that piece is moving to
         :return: None
-        '''
-        # self.previousState = Board()
-        #
-        # for x in range(8):
-        #     for y in range(8):
-        #         tile = self.tilemap[x][y]
-        #         if tile.piece:
-        #             self.previousState.tilemap[x][y].piece = type(tile.piece)(tile.piece.x, tile.piece.y, tile.piece.color)
-        #         else:
-        #             self.previousState.tilemap[x][y].piece = None
-        #
-        # self.previousState.selected = self.selected
-        # self.previousState.blackKingCoords = self.blackKingCoords
-        # self.previousState.whiteKingCoords = self.whiteKingCoords
-        # self.previousState.turn = self.turn
-        # self.previousState.bottomPlayerTurn = self.bottomPlayerTurn
-        # self.previousState.player = self.player
-        # self.previousState.gameover = self.gameover
+        """
 
         # get shorthand for source and destination tiles
         sourceTile = self.tilemap[source[0]][source[1]]
@@ -287,12 +268,13 @@ class Board:
         sourceTile.fill(sourceTile.color)
 
         self.checkmate()
+        self.check_win_conditions()
 
     def copy(self):
-        '''
+        """
         creates a deep copy of the current board
         :return: Board
-        '''
+        """
         copy = Board(self.player)
         for x in range(8):
             for y in range(8):
@@ -312,42 +294,42 @@ class Board:
 
     @staticmethod
     def in_bounds(coords) -> bool:
-        '''
+        """
         returns True if given coordinates are within the bounds of the board
         :param coords: coords to be checked (tuple)
         :return: bool
-        '''
+        """
         if coords[0] < 0 or coords[0] >= 8 or coords[1] < 0 or coords[1] >= 8:
             return False
         return True
 
     def piece_at_coords(self, coords) -> bool:
-        '''
+        """
         returns True if tile at coordinates contains a piece of any kind
         :param coords: coords to be checked (tuple)
         :return: bool
-        '''
-        if self.tilemap[coords[0]][coords[1]].piece is None:
+        """
+        if not self.in_bounds(coords) or self.tilemap[coords[0]][coords[1]].piece is None:
             return False
         return True
 
     def enemy_at_coords(self, coords, color) -> bool:
-        '''
+        """
         returns True if color of the piece at coords is not same as specified color
         :param coords: coords to be checked (tuple)
         :param color: color of current player (tuple)
         :return: bool
-        '''
+        """
         if self.piece_at_coords(coords):
             return self.tilemap[coords[0]][coords[1]].piece.color != color
 
     def count(self, color, piece):
-        '''
+        """
         returns count of a particular piece for a given player color
         :param color: color of player to count pieces for (tuple)
         :param piece: piece that is being counted (Piece)
         :return: int
-        '''
+        """
         cnt = 0
         for x in range(8):
             for y in range(8):
@@ -357,24 +339,23 @@ class Board:
         return cnt
 
     def valid_move(self, dest, color) -> bool:
-        '''
+        """
         returns True if move to dest coords is within board's bounds and not obstructed
         :param dest: coordinates of tile that is being moved to (tuple)
         :param color: color of player that is moving (tuple)
         :return: bool
-        '''
+        """
         if self.in_bounds(dest) \
                 and (not self.piece_at_coords(dest) or self.enemy_at_coords(dest, color)):
             return True
         return False
 
     def in_check(self, color) -> bool:
-        '''
+        """
         returns True if player of specified color is in check
         :param color: color of player to check (tuple)
         :return: bool
-        '''
-        kingCoords = None
+        """
         if color == BLACK:
             kingCoords = self.blackKingCoords
         else:
@@ -391,13 +372,13 @@ class Board:
         return False
 
     def in_check_after_move(self, source, dest, color) -> bool:
-        '''
+        """
         returns True if player of specified color is in check after a move from source to dest
         :param source: coordinates of tile that is being moved from (tuple)
         :param dest: coordinates of tile that is being moved to (tuple)
         :param color: color of player that is moving (tuple)
         :return: bool
-        '''
+        """
         in_check = False
 
         # get shorthand for source and destination tiles and pieces
@@ -430,6 +411,9 @@ class Board:
         self.bottomPlayerTurn = not self.bottomPlayerTurn
 
         # see if in check state after move
+        # if self.in_check(color):
+        #     in_check = True
+
         if self.in_check(color):
             in_check = True
 
@@ -450,12 +434,76 @@ class Board:
 
         return in_check
 
+    def make_move(self, source, dest):
+
+        # get shorthand for source and destination tiles
+        sourceTile = self.tilemap[source[0]][source[1]]
+        destTile = self.tilemap[dest[0]][dest[1]]
+
+        self.previousState["blackScore"] = self.blackScore
+        self.previousState["whiteScore"] = self.whiteScore
+        self.previousState["blackKingCoords"] = self.blackKingCoords
+        self.previousState["whiteKingCoords"] = self.whiteKingCoords
+        if sourceTile.piece:
+            self.previousState["tile1"] = (source, sourceTile.piece.copy())
+        else:
+            self.previousState["tile1"] = (source, None)
+        if destTile.piece:
+            self.previousState["tile2"] = (dest, destTile.piece.copy())
+        else:
+            self.previousState["tile2"] = (dest, None)
+
+        # update scores
+        if destTile.piece:
+            if self.turn == WHITE:
+                self.blackScore -= self.values[type(destTile.piece)]
+            else:
+                self.whiteScore -= self.values[type(destTile.piece)]
+
+        # promote piece if it meets requirements
+        if type(sourceTile.piece) is Pawn:
+            if sourceTile.piece.color == WHITE and destTile.y == 0 \
+                    or sourceTile.piece.color == BLACK and destTile.y == 7:
+                sourceTile.piece = Queen(sourceTile.piece.x, sourceTile.piece.y, sourceTile.piece.color)
+
+        # move piece from source tile to dest tile
+        destTile.piece = sourceTile.piece
+        sourceTile.piece.move(destTile.x, destTile.y)
+        destTile.piece.firstMove = False
+
+        # update king coords if necessary
+        if type(sourceTile.piece) is King:
+            if sourceTile.piece.color == BLACK:
+                self.blackKingCoords = destTile.x, destTile.y
+            else:
+                self.whiteKingCoords = destTile.x, destTile.y
+
+        # remove piece from source tile
+        sourceTile.piece = None
+        sourceTile.fill(sourceTile.color)
+
+        self.checkmate()
+        self.check_win_conditions()
+
+    def unmake_move(self):
+        self.blackScore = self.previousState["blackScore"]
+        self.whiteScore = self.previousState["whiteScore"]
+        self.blackKingCoords = self.previousState["blackKingCoords"]
+        self.whiteKingCoords = self.previousState["whiteKingCoords"]
+        x = self.previousState["tile1"][0][0]
+        y = self.previousState["tile1"][0][1]
+        self.tilemap[x][y].piece = self.previousState["tile1"][1]
+        x = self.previousState["tile2"][0][0]
+        y = self.previousState["tile2"][0][1]
+        self.tilemap[x][y].piece = self.previousState["tile2"][1]
+        self.gameover = None
+
     def can_castle(self, color) -> list:
-        '''
+        """
         returns list of castling moves if player of specified color can castle
         :param color: color of player to check castling ability
         :return: list
-        '''
+        """
         moves = []
         if color == WHITE:
             # make sure pieces are Rook/King, positions are correct, and that it is their first move
@@ -482,10 +530,10 @@ class Board:
         return moves
 
     def next_turn(self) -> None:
-        '''
+        """
         switches turn of board to the other player
         :return: None
-        '''
+        """
         if self.turn == WHITE:
             self.turn = BLACK
         else:
@@ -494,10 +542,10 @@ class Board:
         self.bottomPlayerTurn = not self.bottomPlayerTurn
 
     def checkmate(self) -> bool:
-        '''
+        """
         checks for checkmate or stalemate status of board
         :return: None
-        '''
+        """
         legal_moves = 0
         for x in range(8):
             for y in range(8):
@@ -518,13 +566,13 @@ class Board:
         elif legal_moves == 0:
             print("GAME OVER: Checkmate")
             self.gameover = ("Checkmate", self.turn)
-        return legal_moves == 0
+        return legal_moves
 
     def get_moves(self):
-        '''
+        """
         returns a list of the available moves for the current player
         :return: list
-        '''
+        """
         moves = []
         for x in range(8):
             for y in range(8):
@@ -535,11 +583,54 @@ class Board:
         #moves += self.can_castle(self.turn)
         return list(set(moves))
 
-    # def check_win_conditions(self):
-    #     # insufficient material
-    #     piece_counts = {"minor": 0, "king": 0, "knight": 0}
-    #     for x in range(8):
-    #         for y in range(8):
-    #             piece = self.tilemap[x][y].piece
-    #             if type(piece) is King:
-    #                 piece_counts["king"] += 1
+    def get_moves_sorted(self):
+        b = self.copy()
+        moves = {}
+        for x in range(8):
+            for y in range(8):
+                if self.piece_at_coords((x, y)) and self.tilemap[x][y].piece.color == self.turn:
+                    for move in self.tilemap[x][y].piece.valid_moves(self):
+                        if not self.in_check_after_move((x, y), move, self.turn) and ((x, y), move) not in moves:
+                            b.make_move((x, y), move)
+                            moves[((x, y), move)] = AI.evaluate(b, self.turn)
+                            b.unmake_move()
+        return [move for move, score in sorted(moves.items(), key=lambda v: v[1], reverse=True)]
+
+    def check_win_conditions(self):
+        # Insufficient material
+        piece_counts = {"wminor": 0, "bminor": 0, "king": 0, "wknight": 0, "bknight":0}
+        for x in range(8):
+            for y in range(8):
+                piece = self.tilemap[x][y].piece
+                if piece:
+                    if type(piece) is King:
+                        piece_counts["king"] += 1
+                    elif type(piece) is Knight and piece.color == WHITE:
+                        piece_counts["wknight"] += 1
+                    elif type(piece) is Knight and piece.color == BLACK:
+                        piece_counts["bknight"] += 1
+                    else:
+                        if piece.color == WHITE:
+                            piece_counts["wminor"] += 1
+                        else:
+                            piece_counts["bminor"] += 1
+
+        # King vs King
+        if piece_counts["wminor"] == piece_counts["bminor"] == piece_counts["wknight"] == piece_counts["bknight"] == 0 and piece_counts["king"] == 2:
+            print("one")
+            self.gameover = ("Insufficient Material", None)
+        # King + minor piece vs King
+        elif ((piece_counts["wminor"] == 1 and piece_counts["bminor"] == 0) or (piece_counts["bminor"] == 1 and piece_counts["wminor"] == 0)) and piece_counts["king"] == 2 and piece_counts["bknight"] == piece_counts["wknight"] == 0:
+            print("two")
+            self.gameover = ("Insufficient Material", None)
+        # King + two Knights vs King
+        elif (piece_counts["wknight"] == 2 and piece_counts["king"] == 2 and piece_counts["wminor"] == piece_counts["bminor"] == 0) or (piece_counts["bknight"] == 2 and piece_counts["king"] == 2 and piece_counts["wminor"] == piece_counts["bminor"] == 0):
+            print("three")
+            self.gameover = ("Insufficient Material", None)
+        elif (piece_counts["wminor"] == 1 and piece_counts["king"] == 2 and piece_counts["bminor"] == 0) or (piece_counts["bminor"] == 1 and piece_counts["king"] == 2 and piece_counts["wminor"] == 0):
+            print("four")
+            self.gameover = ("Insufficient Material", None)
+
+        # TEMPORARY
+        elif piece_counts["wminor"] == 1:
+            self.gameover = ("TESTING", None)
