@@ -27,7 +27,9 @@ A singleplayer chess game where players can enter their name, select their color
 ### Menu Screen
 ![Menu Screen](https://i.paste.pics/fb89c6ccc7b403a7c3d9bb9bbd18515b.png)
 ### Game Screen
-![Game Screen](https://i.paste.pics/8473f600f1bc50ea5965f950ce16cb8d.png)
+![Game Screen #1](https://i.paste.pics/8473f600f1bc50ea5965f950ce16cb8d.png)
+![Game Screen #2](https://i.paste.pics/3b918de8bb676d34f886f93186939348.png)
+
 ### End Screen
 ![End Screen](https://i.paste.pics/3988638a886560139ea1e6a74cf0d4fd.png)
 
