@@ -31,7 +31,7 @@ A singleplayer chess game where players can enter their name, select their color
 ![Game Screen](https://i.paste.pics/3b918de8bb676d34f886f93186939348.png)
 
 ### End Screen
-![End Screen](https://i.paste.pics/3988638a886560139ea1e6a74cf0d4fd.png)
+![End Screen](https://i.paste.pics/254f879f78f572462bc5950867dff21f.png)
 
 ## Known Bugs
 - No En passant rule for pawns
