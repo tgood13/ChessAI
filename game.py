@@ -1,16 +1,15 @@
-import pygame_menu
-
-from board import *
-from timer import Timer
 from math import inf
 
-import AI
+import pygame_menu
 
-import threading
 import queue
 import sys
+import threading
 import time
+from board import *
+from timer import Timer
 
+# Initialize Pygame
 pygame.init()
 
 # Fonts
@@ -44,22 +43,13 @@ class Game:
         self.menu_screen()
         #self.TEST_SCREEN()
 
-    def TEST_SCREEN(self):
+    def test_screen(self):
 
         running = True
 
         self.reset()
 
-        #moves = [((3, 6), (3, 5)), ((7, 1), (7, 3)), ((1, 7), (0, 5)), ((2, 1), (2, 2)), ((0, 5), (1, 7)), ((3, 0), (2, 1)),
-        # ((1, 6), (1, 5)), ((2, 1), (7, 6)), ((2, 7), (6, 3)), ((7, 6), (7, 7)), ((1, 5), (1, 4)), ((7, 7), (6, 7)),
-         #((6, 3), (2, 7)), ((6, 7), (5, 7)), ((4, 7), (5, 7)), ((4, 0), (3, 0)), ((4, 6), (4, 5)), ((3, 0), (2, 1)),
-        # ((1, 7), (3, 6)), ((3, 1), (3, 3)), ((3, 6), (2, 4)), ((3, 3), (2, 4)), ((3, 7), (5, 5)), ((2, 4), (3, 5)),
-        # ((5, 5), (2, 2)), ((2, 1), (2, 2)), ((1, 4), (1, 3)), ((2, 2), (1, 3)), ((2, 7), (0, 5)), ((3, 5), (2, 6)),
-        # ((0, 7), (3, 7)), ((2, 6), (3, 7))]
-
         moves = [((6, 7), (7, 5)), ((7, 1), (7, 3)), ((1, 6), (1, 5)), ((2, 1), (2, 2)), ((7, 7), (6, 7)), ((3, 0), (2, 1)), ((1, 5), (1, 4)), ((2, 1), (7, 6)), ((2, 6), (2, 5)), ((7, 6), (6, 7)), ((7, 5), (5, 4)), ((6, 7), (5, 7)), ((4, 7), (5, 7)), ((4, 0), (3, 0)), ((5, 4), (3, 3)), ((2, 2), (3, 3)), ((1, 7), (0, 5)), ((3, 0), (2, 1)), ((5, 6), (5, 4)), ((2, 1), (2, 2)), ((2, 5), (2, 4)), ((3, 3), (2, 4)), ((0, 7), (1, 7)), ((2, 2), (3, 2)), ((4, 6), (4, 4)), ((3, 2), (4, 2)), ((5, 4), (5, 3)), ((4, 2), (3, 2)), ((3, 7), (0, 4)), ((3, 2), (4, 3)), ((3, 6), (3, 4)), ((4, 3), (4, 4)), ((2, 7), (3, 6)), ((4, 4), (3, 4)), ((0, 4), (0, 1)), ((0, 0), (0, 1)), ((0, 5), (2, 6)), ((3, 4), (4, 4)), ((1, 7), (1, 5)), ((2, 4), (1, 5)), ((3, 6), (4, 5)), ((1, 5), (2, 6)), ((0, 6), (0, 5)), ((4, 4), (4, 5)), ((5, 7), (4, 7)), ((0, 1), (0, 5)), ((5, 3), (5, 2)), ((4, 1), (5, 2))]
-
-
 
         i = 0
         for move in moves:
@@ -69,7 +59,6 @@ class Game:
             pygame.display.flip()
 
             self.board.print()
-
 
             i += 1
             if i > len(moves) - 5:
@@ -89,7 +78,6 @@ class Game:
                         self.end_screen(self.board.gameover[0], self.p1_name)
                     else:
                         self.end_screen(self.board.gameover[0], self.p2_name)
-
 
         self.board.print()
 
@@ -193,7 +181,7 @@ class Game:
         """
         # Determine move based on selected AI
         if self.p2_name == "Minimax":
-            self.ai_move.put(AI.minimax2(self.board.copy(), 3, -inf, inf, True, self.p2_color)[0])
+            self.ai_move.put(AI.minimax2(self.board.copy(), 1, -inf, inf, True, self.p2_color)[0])
         else:
             self.ai_move.put(AI.random_move(self.board))
 
@@ -255,10 +243,6 @@ class Game:
             self.p2_timer.draw()
             self.draw_resign_button()
 
-            # Check for endgame state
-            #self.board.checkmate()
-            #self.board.check_win_conditions()
-
             # GAME OVER: Checkmate, Stalemate, or Insufficient Material
             if self.board.gameover:
                 print("GAME OVER: ", self.board.gameover[0])
@@ -290,22 +274,20 @@ class Game:
             # 2 - They haven't found a move already
             # 3 - The game is not over
             # 4 - They aren't currently searching for a move (ensure 'determine_move' thread is not running)
-            #self.lock.acquire()
+            self.lock.acquire()
             if self.board.turn == self.p2_color \
                     and self.ai_move.qsize() == 0 \
                     and not self.board.gameover \
                     and not t.is_alive():
-                #print("AI is finding move...")
                 # Need to remake thread, since a thread can only be started once
                 t = threading.Thread(target=self.determine_move)
                 t.start()
-            #self.lock.release()
+            self.lock.release()
 
-            # Self-play
-            # if self.board.turn == self.p1_color:
-            #     move = AI.random_move(self.board)
-            #     self.board.make_move(move[0], move[1])
-            #     self.board.next_turn()
+            if self.board.turn == self.p1_color:
+                move = AI.random_move(self.board)
+                self.board.make_move(move[0], move[1])
+                self.board.next_turn()
 
             # Tell AI to make their move if...
             # 1 - It is their turn
@@ -314,7 +296,6 @@ class Game:
             if self.board.turn == self.p2_color \
                     and self.ai_move.qsize() > 0 \
                     and not self.board.gameover:
-                #print("Move Found! AI is moving piece.")
                 move = self.ai_move.get()
                 self.board.make_move(move[0], move[1])
                 self.board.next_turn()
@@ -390,9 +371,9 @@ class Game:
             pygame.display.flip()
 
             # Self-play
-            # time.sleep(1)
-            # self.reset()
-            # return self.game_screen()
+            time.sleep(1)
+            self.reset()
+            return self.game_screen()
 
     def draw_names(self):
         """
@@ -417,7 +398,7 @@ class Game:
             txt = FONT.render("YOUR TURN", True, LARGE_TEXT_COLOR)
             SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 3.5 + 8), BOARD_Y+BOARD_SIZE+10))
         else:
-            txt = FONT.render("THEIR TURN", True, LARGE_TEXT_COLOR)
+            txt = FONT.render("AI is thinking...", True, LARGE_TEXT_COLOR)
             SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 3.5 + 8), BOARD_Y+BOARD_SIZE+10))
 
     def draw_resign_button(self):

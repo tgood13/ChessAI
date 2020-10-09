@@ -24,7 +24,7 @@ class Tile:
         :return: None
         """
         if self.contains_piece():
-            self.fill(LIGHT_BLUE)
+            self.fill(HIGHLIGHT_COLOR)
             self.draw()
 
     def draw(self):

@@ -400,8 +400,6 @@ class Board:
                           "whiteKingCoords": self.whiteKingCoords,
                           "tile1": (source, source_tile.copy()),
                           "tile2": (dest, dest_tile.copy()),
-                          "bottomPlayerTurn": self.bottomPlayerTurn,
-                          "turn": self.turn,
                           "gameover": self.gameover
                           }
         self.past_moves.append(previous_state)
@@ -455,12 +453,9 @@ class Board:
         x = previous_state["tile2"][0][0]
         y = previous_state["tile2"][0][1]
         self.tilemap[x][y] = previous_state["tile2"][1]
-        self.bottomPlayerTurn = previous_state["bottomPlayerTurn"]
-        self.turn = previous_state["turn"]
         self.gameover = previous_state["gameover"]
 
-        self.checkmate()
-        self.check_win_conditions()
+        self.next_turn()
 
     def can_castle(self, color) -> list:
         """
@@ -541,12 +536,11 @@ class Board:
                 if self.piece_at_coords((x, y)) and self.tilemap[x][y].piece.color == self.turn:
                     for move in self.tilemap[x][y].piece.valid_moves(self):
                         if not self.in_check_after_move((x, y), move, self.turn):
-                            # if self.enemy_at_coords(move, self.turn):
-                            #     moves.insert(0, ((x, y), move))
-                            # else:
-                            #     moves.append(((x, y), move))
-                            moves.append(((x, y), move))
-        return moves
+                            if self.enemy_at_coords(move, self.turn):
+                                moves.insert(0, ((x, y), move))
+                            else:
+                                moves.append(((x, y), move))
+        return list(set(moves))          # converting to set then back to list has randomizing effect on moves
 
     def get_moves_sorted(self):
         """
