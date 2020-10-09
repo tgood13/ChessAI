@@ -41,16 +41,30 @@ class Piece:
         self.firstMove = True
 
     def draw(self):
+        """
+        Draws piece
+        :return: None
+        """
         if self.color == WHITE:
             SCREEN.blit(IMAGES[self.image], to_coords(self.x, self.y))
         else:
             SCREEN.blit(IMAGES[self.image+1], to_coords(self.x, self.y))
 
     def move(self, x, y):
+        """
+        Updates x and y coordinates for Piece
+        :param x: x coordinate on grid
+        :param y: y coordinate on grid
+        :return: None
+        """
         self.x = x
         self.y = y
 
     def copy(self):
+        """
+        Creates a deep copy of the current piece
+        :return: reference to a new Piece object
+        """
         copy = type(self)(self.x, self.y, self.color)
         copy.image = self.image
         copy.firstMove = self.firstMove
@@ -69,7 +83,7 @@ class King(Piece):
     def valid_moves(self, board):
         moves = []
 
-        # move 1 in each direction
+        # Move 1 in each direction
         for x in range(self.x-1, self.x+2):
             for y in range(self.y-1, self.y+2):
                 if board.valid_move((x, y), self.color):
@@ -106,7 +120,7 @@ class Bishop(Piece):
     def valid_moves(self, board):
         moves = []
 
-        # up left
+        # Up left
         x, y = self.x, self.y
         while board.valid_move((x-1, y-1), self.color):
             moves.append((x-1, y-1))
@@ -115,7 +129,7 @@ class Bishop(Piece):
             x -= 1
             y -= 1
 
-        # up right
+        # Up right
         x, y = self.x, self.y
         while board.valid_move((x+1, y-1), self.color):
             moves.append((x+1, y-1))
@@ -124,7 +138,7 @@ class Bishop(Piece):
             x += 1
             y -= 1
 
-        # down left
+        # Down left
         x, y = self.x, self.y
         while board.valid_move((x-1, y+1), self.color):
             moves.append((x-1, y+1))
@@ -133,7 +147,7 @@ class Bishop(Piece):
             x -= 1
             y += 1
 
-        # down right
+        # Down right
         x, y = self.x, self.y
         while board.valid_move((x+1, y+1), self.color):
             moves.append((x+1, y+1))
@@ -157,7 +171,7 @@ class Knight(Piece):
     def valid_moves(self, board):
         moves = []
 
-        # move 1 diagonal, 1 straight
+        # Move 1 diagonal, 1 straight
         for x in range(self.x-2, self.x+3):
             for y in range(self.y-2, self.y+3):
                 if abs(self.x - x) == 2 and abs(self.y - y) == 1 or abs(self.x - x) == 1 and abs(self.y - y) == 2:
@@ -178,28 +192,28 @@ class Rook(Piece):
     def valid_moves(self, board):
         moves = []
 
-        # up
+        # Up
         for y in range(self.y-1, -1, -1):
             if board.valid_move((self.x, y), self.color):
                 moves.append((self.x, y))
             if board.piece_at_coords((self.x, y)):
                 break
 
-        # down
+        # Down
         for y in range(self.y+1, 8, 1):
             if board.valid_move((self.x, y), self.color):
                 moves.append((self.x, y))
             if board.piece_at_coords((self.x, y)):
                 break
 
-        # left
+        # Left
         for x in range(self.x-1, -1, -1):
             if board.valid_move((x, self.y), self.color):
                 moves.append((x, self.y))
             if board.piece_at_coords((x, self.y)):
                 break
 
-        # right
+        # Right
         for x in range(self.x+1, 8, 1):
             if board.valid_move((x, self.y), self.color):
                 moves.append((x, self.y))
@@ -222,44 +236,44 @@ class Pawn(Piece):
         moves = []
 
         if board.bottomPlayerTurn:
-            # move forward 1
+            # Move forward 1
             if board.valid_move((self.x, self.y-1), self.color) \
                     and not board.piece_at_coords((self.x, self.y-1)):
                 moves.append((self.x, self.y-1))
 
-                # move forward 2 on first move
+                # Move forward 2 on first move
                 if board.valid_move((self.x, self.y-2), self.color) \
                         and not board.piece_at_coords((self.x, self.y-2)) \
                         and self.firstMove:
                     moves.append((self.x, self.y-2))
 
-            # attack diagonal left
+            # Attack diagonal left
             if board.valid_move((self.x-1, self.y-1), self.color) \
                     and board.enemy_at_coords((self.x-1, self.y-1), self.color):
                 moves.append((self.x-1, self.y-1))
 
-            # attack diagonal right
+            # Attack diagonal right
             if board.valid_move((self.x+1, self.y-1), self.color) \
                     and board.enemy_at_coords((self.x+1, self.y-1), self.color):
                 moves.append((self.x+1, self.y-1))
         else:
-            # move forward 1
+            # Move forward 1
             if board.valid_move((self.x, self.y+1), self.color) \
                     and not board.piece_at_coords((self.x, self.y+1)):
                 moves.append((self.x, self.y+1))
 
-                # move forward 2 on first move
+                # Move forward 2 on first move
                 if board.valid_move((self.x, self.y+2), self.color) \
                         and not board.piece_at_coords((self.x, self.y+2)) \
                         and self.firstMove:
                     moves.append((self.x, self.y+2))
 
-            # attack diagonal left
+            # Attack diagonal left
             if board.valid_move((self.x-1, self.y+1), self.color) \
                     and board.enemy_at_coords((self.x-1, self.y+1), self.color):
                 moves.append((self.x-1, self.y+1))
 
-            # attack diagonal right
+            # Attack diagonal right
             if board.valid_move((self.x+1, self.y+1), self.color) \
                     and board.enemy_at_coords((self.x+1, self.y+1), self.color):
                 moves.append((self.x+1, self.y+1))

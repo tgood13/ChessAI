@@ -25,55 +25,69 @@ class Board:
         self.blackScore = 1290
         self.whiteScore = 1290
 
-        self.previousState = {}
+        self.past_moves = []
+
+    def print(self):
+        print("\n-----------------------------------------")
+        print("blackKingCoords:  ", self.blackKingCoords)
+        print("whiteKingCoords:  ", self.whiteKingCoords)
+        print("Turn:             ", self.turn)
+        print("CanMoveCount:     ", self.checkmate())
+        print("InCheck:          ", self.in_check(self.turn))
+        print("Player:           ", self.player)
+        print("BottomPlayerTurn: ", self.bottomPlayerTurn)
+        print("Gameover:         ", self.gameover)
+        print("blackScore:       ", self.blackScore)
+        print("whiteScore:       ", self.whiteScore)
+        print("-----------------------------------------")
 
     def initialize_pieces(self) -> None:
         """
-        places all pieces in the correct starting position
+        Places all pieces in the correct starting position
         :return: None
         """
 
-        # remove all pieces from board
+        # Remove all pieces from board
         for x in range(8):
             for y in range(8):
                 self.tilemap[x][y].piece = None
 
-        # pawns
+        # Pawns
         for i in range(8):
             self.tilemap[i][1].piece = Pawn(i, 1, BLACK)
             self.tilemap[i][6].piece = Pawn(i, 6, WHITE)
 
-        # rooks
+        # Rooks
         self.tilemap[0][0].piece = Rook(0, 0, BLACK)
         self.tilemap[7][0].piece = Rook(7, 0, BLACK)
         self.tilemap[0][7].piece = Rook(0, 7, WHITE)
         self.tilemap[7][7].piece = Rook(7, 7, WHITE)
 
-        # knights
+        # Knights
         self.tilemap[1][0].piece = Knight(1, 0, BLACK)
         self.tilemap[6][0].piece = Knight(6, 0, BLACK)
         self.tilemap[1][7].piece = Knight(1, 7, WHITE)
         self.tilemap[6][7].piece = Knight(6, 7, WHITE)
 
-        # bishops
+        # Bishops
         self.tilemap[2][0].piece = Bishop(2, 0, BLACK)
         self.tilemap[5][0].piece = Bishop(5, 0, BLACK)
         self.tilemap[2][7].piece = Bishop(2, 7, WHITE)
         self.tilemap[5][7].piece = Bishop(5, 7, WHITE)
 
-        # queens
+        # Queens
         self.tilemap[3][0].piece = Queen(3, 0, BLACK)
         self.tilemap[3][7].piece = Queen(3, 7, WHITE)
 
-        # kings
+        # Kings
         self.tilemap[4][0].piece = King(4, 0, BLACK)
         self.tilemap[4][7].piece = King(4, 7, WHITE)
 
-        # store coords of both kings
+        # Store coords of both kings
         self.blackKingCoords = (4, 0)
         self.whiteKingCoords = (4, 7)
 
-        # reverse piece positions if player is playing black
+        # Reverse piece positions if player is playing black
         if self.player == BLACK:
             self.blackKingCoords = (4, 7)
             self.whiteKingCoords = (4, 0)
@@ -87,7 +101,7 @@ class Board:
 
     def initialize_tiles(self) -> None:
         """
-        sets the tile grid for the chess board
+        Initializes the tile grid for the chess board
         :return: None
         """
         cnt = 0
@@ -95,29 +109,29 @@ class Board:
             for y in range(8):
                 tile = Tile(None, x, y)
                 if cnt % 2 == 0:
-                    tile.color = BEIGE
-                    tile.fill(BEIGE)
+                    tile.color = TILE_COLOR_LIGHT
+                    tile.fill(TILE_COLOR_LIGHT)
                 else:
-                    tile.color = BROWN
-                    tile.fill(BROWN)
+                    tile.color = TILE_COLOR_DARK
+                    tile.fill(TILE_COLOR_DARK)
                 self.tilemap[x][y] = tile
                 cnt += 1
             cnt += 1
 
     def draw(self) -> None:
         """
-        draws all components of the board
+        Draws all components of the board
         :return: None
         """
 
-        # draw tiles and pieces
+        # Draw tiles and pieces
         for row in self.tilemap:
             for tile in row:
                 tile.draw()
 
-        # draw circles to indicate valid move locations
+        # Draw circles to indicate valid move locations
         if self.selected:
-            moves = self.selected.piece.valid_moves(self) # + self.can_castle(self.selected.piece.color)
+            moves = self.selected.piece.valid_moves(self)  # + self.can_castle(self.selected.piece.color)
             for move in moves:
                 if not self.in_check_after_move((self.selected.piece.x, self.selected.piece.y),
                                                 move, self.selected.piece.color):
@@ -125,27 +139,27 @@ class Board:
                     x = tup[0] + int(TILE_SIZE / 2)
                     y = tup[1] + int(TILE_SIZE / 2)
                     tup2 = x, y
-                    pygame.draw.circle(SCREEN, GREEN, tup2, 10)
+                    pygame.draw.circle(SCREEN, LARGE_TEXT_COLOR, tup2, 10)
 
     def select(self) -> None:
         """
-        selects tile that contains the mouse pointer if tile is valid
+        Selects tile that contains the mouse pointer if tile is valid
         :return: None
         """
 
-        # get position of mouse
+        # Get position of mouse
         pos = pygame.mouse.get_pos()
 
-        # get coordinates of top left corner of selected tile
+        # Get coordinates of top left corner of selected tile
         x = (pos[0] - BOARD_X) // TILE_SIZE
         y = (pos[1] - BOARD_Y) // TILE_SIZE
         coords = x, y
 
-        # player can only move their own pieces
+        # Player can only move their own pieces
         if self.player != self.turn:
             return
 
-        # if mouse position is out of bounds, de-select current tile (if applicable) and restore its color
+        # If mouse position is out of bounds, de-select current tile (if applicable) and restore its color
         if not self.in_bounds(coords):
             print("Out of bounds selection.")
             if self.selected:
@@ -153,127 +167,77 @@ class Board:
                 self.selected = None
             return
 
-        # # handle castling case
-        # if self.selected and type(self.selected.piece) is King and self.can_castle(self.selected.piece.color):
-        #     print("Castling!")
-        #     if (x, y) == (2, 7):
-        #         self.move_piece((4, 7), (2, 7))
-        #         self.move_piece((0, 7), (3, 7))
-        #     elif (x, y) == (6, 7):
-        #         self.move_piece((4, 7), (6, 7))
-        #         self.move_piece((7, 7), (5, 7))
-        #     elif (x, y) == (2, 0):
-        #         self.move_piece((4, 0), (2, 0))
-        #         self.move_piece((0, 0), (3, 0))
-        #     elif (x, y) == (6, 0):
-        #         self.move_piece((4, 0), (6, 0))
-        #         self.move_piece((7, 0), (5, 0))
-        #     else:
-        #
-        #     self.selected = None
-        #     self.next_turn()
-        #     return
-
-        # if a piece is already selected, make move to selected tile
+        # If a piece is already selected, make move to selected tile
         if self.selected and coords in self.selected.piece.valid_moves(self) \
                 and not self.in_check_after_move((self.selected.piece.x, self.selected.piece.y), coords,
                                                  self.selected.piece.color):
             print("Moving Piece!")
-            self.move_piece((self.selected.x, self.selected.y), (x, y))
+            #self.move_piece((self.selected.x, self.selected.y), (x, y))
+            self.make_move((self.selected.x, self.selected.y), (x, y))
             self.selected = None
             self.next_turn()
             return
 
-        # restore color and de-select previously selected tile before selecting new tile
+        # Restore color and de-select previously selected tile before selecting new tile
         if self.selected:
             print("De-selecting old tile.")
             self.selected.fill(self.selected.color)
             self.selected = None
 
-        # select tile at coordinates and remember tile
+        # Select tile at coordinates and remember tile
         if self.piece_at_coords((x, y)) and self.tilemap[x][y].piece.color == self.turn:
             print("Selected Tile.")
             self.tilemap[x][y].select()
             self.selected = self.tilemap[x][y]
 
-    def move_piece(self, source, dest) -> None:
-        """
-        moves piece from source coords to dest coords and makes necessary updates to game state
-        :param source: coordinates of tile that piece is moving from
-        :param dest: coordinates of tile that piece is moving to
-        :return: None
-        """
-
-        # get shorthand for source and destination tiles
-        sourceTile = self.tilemap[source[0]][source[1]]
-        destTile = self.tilemap[dest[0]][dest[1]]
-
-        # update scores
-        if destTile.piece:
-            if self.turn == WHITE:
-                self.blackScore -= self.values[type(destTile.piece)]
-            else:
-                self.whiteScore -= self.values[type(destTile.piece)]
-
-        # promote piece if it meets requirements
-        if type(sourceTile.piece) is Pawn:
-            if sourceTile.piece.color == WHITE and destTile.y == 0 \
-                    or sourceTile.piece.color == BLACK and destTile.y == 7:
-                sourceTile.piece = Queen(sourceTile.piece.x, sourceTile.piece.y, sourceTile.piece.color)
-
-        # # handle castling case
-        # if type(sourceTile.piece) is King and self.can_castle(sourceTile.piece.color)\
-        #         and (sourceTile.x, sourceTile.y) in [(2, 7), (6, 7), (2, 0), (6, 0)]:
-        #     print("Castling!")
-        #
-        #     if (sourceTile.x, sourceTile.y) == (2, 7):
-        #         self.tilemap[3][7].piece = self.tilemap[0][7].piece
-        #         self.tilemap[3][7].piece.move(3, 7)
-        #         self.tilemap[3][7].piece.firstMove = False
-        #         self.tilemap[0][7].piece = None
-        #         self.tilemap[0][7].fill(self.tilemap[0][7].color)
-        #     elif (sourceTile.x, sourceTile.y) == (6, 7):
-        #         self.tilemap[5][7].piece = self.tilemap[7][7].piece
-        #         self.tilemap[7][7].piece.move(5, 7)
-        #         self.tilemap[5][7].piece.firstMove = False
-        #         self.tilemap[7][7].piece = None
-        #         self.tilemap[7][7].fill(self.tilemap[7][7].color)
-        #     elif (sourceTile.x, sourceTile.y) == (2, 0):
-        #         self.tilemap[3][0].piece = self.tilemap[0][0].piece
-        #         self.tilemap[0][0].piece.move(3, 0)
-        #         self.tilemap[3][0].piece.firstMove = False
-        #         self.tilemap[0][0].piece = None
-        #         self.tilemap[0][0].fill(self.tilemap[0][0].color)
-        #     elif (sourceTile.x, sourceTile.y) == (6, 0):
-        #         self.tilemap[5][0].piece = self.tilemap[7][0].piece
-        #         self.tilemap[7][0].piece.move(5, 0)
-        #         self.tilemap[5][0].piece.firstMove = False
-        #         self.tilemap[7][0].piece = None
-        #         self.tilemap[7][0].fill(self.tilemap[7][0].color)
-
-        # move piece from source tile to dest tile
-        destTile.piece = sourceTile.piece
-        sourceTile.piece.move(destTile.x, destTile.y)
-        destTile.piece.firstMove = False
-
-        # update king coords if necessary
-        if type(sourceTile.piece) is King:
-            if sourceTile.piece.color == BLACK:
-                self.blackKingCoords = destTile.x, destTile.y
-            else:
-                self.whiteKingCoords = destTile.x, destTile.y
-
-        # remove piece from source tile
-        sourceTile.piece = None
-        sourceTile.fill(sourceTile.color)
-
-        self.checkmate()
-        self.check_win_conditions()
+    # def move_piece(self, source, dest) -> None:
+    #     """
+    #     Moves piece from source coords to dest coords and makes necessary updates to game state
+    #     :param source: coordinates of tile that piece is moving from (tuple)
+    #     :param dest: coordinates of tile that piece is moving to (tuple)
+    #     :return: None
+    #     """
+    #
+    #     # get shorthand for source and destination tiles
+    #     source_tile = self.tilemap[source[0]][source[1]]
+    #     dest_tile = self.tilemap[dest[0]][dest[1]]
+    #
+    #     # update scores
+    #     if dest_tile.piece:
+    #         if self.turn == WHITE:
+    #             self.blackScore -= self.values[type(dest_tile.piece)]
+    #         else:
+    #             self.whiteScore -= self.values[type(dest_tile.piece)]
+    #
+    #     # promote piece if it meets requirements
+    #     if type(source_tile.piece) is Pawn:
+    #         if source_tile.piece.color == WHITE and dest_tile.y == 0 \
+    #                 or source_tile.piece.color == BLACK and dest_tile.y == 7:
+    #             source_tile.piece = Queen(source_tile.piece.x, source_tile.piece.y, source_tile.piece.color)
+    #
+    #     # move piece from source tile to dest tile
+    #     dest_tile.piece = source_tile.piece
+    #     source_tile.piece.move(dest_tile.x, dest_tile.y)
+    #     dest_tile.piece.firstMove = False
+    #
+    #     # update king coords if necessary
+    #     if type(source_tile.piece) is King:
+    #         if source_tile.piece.color == BLACK:
+    #             self.blackKingCoords = dest_tile.x, dest_tile.y
+    #         else:
+    #             self.whiteKingCoords = dest_tile.x, dest_tile.y
+    #
+    #     # remove piece from source tile
+    #     source_tile.piece = None
+    #     source_tile.fill(source_tile.color)
+    #
+    #     self.checkmate()
+    #     self.check_win_conditions()
 
     def copy(self):
         """
-        creates a deep copy of the current board
-        :return: Board
+        Creates a deep copy of the current board
+        :return: reference to a new Board object
         """
         copy = Board(self.player)
         for x in range(8):
@@ -295,7 +259,7 @@ class Board:
     @staticmethod
     def in_bounds(coords) -> bool:
         """
-        returns True if given coordinates are within the bounds of the board
+        Returns True if given coordinates are within the bounds of the board
         :param coords: coords to be checked (tuple)
         :return: bool
         """
@@ -305,7 +269,7 @@ class Board:
 
     def piece_at_coords(self, coords) -> bool:
         """
-        returns True if tile at coordinates contains a piece of any kind
+        Returns True if tile at coordinates contains a piece of any kind
         :param coords: coords to be checked (tuple)
         :return: bool
         """
@@ -315,7 +279,7 @@ class Board:
 
     def enemy_at_coords(self, coords, color) -> bool:
         """
-        returns True if color of the piece at coords is not same as specified color
+        Returns True if color of the piece at coords is not same as specified color
         :param coords: coords to be checked (tuple)
         :param color: color of current player (tuple)
         :return: bool
@@ -323,24 +287,9 @@ class Board:
         if self.piece_at_coords(coords):
             return self.tilemap[coords[0]][coords[1]].piece.color != color
 
-    def count(self, color, piece):
-        """
-        returns count of a particular piece for a given player color
-        :param color: color of player to count pieces for (tuple)
-        :param piece: piece that is being counted (Piece)
-        :return: int
-        """
-        cnt = 0
-        for x in range(8):
-            for y in range(8):
-                if self.piece_at_coords((x, y)):
-                    if type(self.tilemap[x][y].piece) is piece and self.tilemap[x][y].piece.color == color:
-                        cnt += 1
-        return cnt
-
     def valid_move(self, dest, color) -> bool:
         """
-        returns True if move to dest coords is within board's bounds and not obstructed
+        Returns True if move to dest coords is within board's bounds and not obstructed
         :param dest: coordinates of tile that is being moved to (tuple)
         :param color: color of player that is moving (tuple)
         :return: bool
@@ -352,178 +301,193 @@ class Board:
 
     def in_check(self, color) -> bool:
         """
-        returns True if player of specified color is in check
+        Returns True if player of specified color is in check
         :param color: color of player to check (tuple)
         :return: bool
         """
         if color == BLACK:
-            kingCoords = self.blackKingCoords
+            king_coords = self.blackKingCoords
         else:
-            kingCoords = self.whiteKingCoords
+            king_coords = self.whiteKingCoords
 
-        # check if position of King is in any of the valid moves for opposite player
+        # Check if position of King is in any of the valid moves for opposite player
         for x in range(8):
             for y in range(8):
                 if self.enemy_at_coords((x, y), color):
                     for move in self.tilemap[x][y].piece.valid_moves(self):
-                        if move[0] == kingCoords[0] and move[1] == kingCoords[1]:
+                        if move[0] == king_coords[0] and move[1] == king_coords[1]:
                             return True
 
         return False
 
     def in_check_after_move(self, source, dest, color) -> bool:
         """
-        returns True if player of specified color is in check after a move from source to dest
+        Returns True if player of specified color is in check after a move from source to dest
         :param source: coordinates of tile that is being moved from (tuple)
         :param dest: coordinates of tile that is being moved to (tuple)
         :param color: color of player that is moving (tuple)
         :return: bool
         """
-        in_check = False
 
-        # get shorthand for source and destination tiles and pieces
-        sourceTile = self.tilemap[source[0]][source[1]]
-        destTile = self.tilemap[dest[0]][dest[1]]
-        destPiece = destTile.piece
-        sourcePiece = sourceTile.piece
+        # Get shorthand for source and destination tiles and pieces
+        source_tile = self.tilemap[source[0]][source[1]]
+        dest_tile = self.tilemap[dest[0]][dest[1]]
+        source_piece = source_tile.piece
+        dest_piece = dest_tile.piece
 
-        # preserve king coords
-        kingCoords = None
-        if type(sourcePiece) is King:
+        # Preserve king coords
+        king_coords = None
+        if type(source_piece) is King:
             if color == BLACK:
-                kingCoords = self.blackKingCoords
+                king_coords = self.blackKingCoords
             else:
-                kingCoords = self.whiteKingCoords
+                king_coords = self.whiteKingCoords
 
-        # move piece from source tile to dest tile
-        destTile.piece = sourcePiece
-        destTile.piece.move(destTile.x, destTile.y)
-        sourceTile.piece = None
+        # Move piece from source tile to dest tile
+        dest_tile.piece = source_piece
+        dest_tile.piece.move(dest_tile.x, dest_tile.y)
+        source_tile.piece = None
 
-        # set king coords
-        if type(sourcePiece) is King:
+        # Set king coords
+        if type(source_piece) is King:
             if color == BLACK:
-                self.blackKingCoords = (destTile.piece.x, destTile.piece.y)
+                self.blackKingCoords = (dest_tile.piece.x, dest_tile.piece.y)
             else:
-                self.whiteKingCoords = (destTile.piece.x, destTile.piece.y)
+                self.whiteKingCoords = (dest_tile.piece.x, dest_tile.piece.y)
 
-        # set playerpos
+        # Set player position
         self.bottomPlayerTurn = not self.bottomPlayerTurn
 
-        # see if in check state after move
-        # if self.in_check(color):
-        #     in_check = True
-
+        # See if in check state after move
         if self.in_check(color):
             in_check = True
+        else:
+            in_check = False
 
-        # restore king coords
-        if type(sourcePiece) is King:
+        # Restore king coords
+        if type(source_piece) is King:
             if color == BLACK:
-                self.blackKingCoords = kingCoords
+                self.blackKingCoords = king_coords
             else:
-                self.whiteKingCoords = kingCoords
+                self.whiteKingCoords = king_coords
 
-        # restore playerpos
+        # Restore player position
         self.bottomPlayerTurn = not self.bottomPlayerTurn
 
-        # move piece back
-        sourceTile.piece = sourcePiece
-        destTile.piece = destPiece
-        sourceTile.piece.move(sourceTile.x, sourceTile.y)
+        # Move piece back
+        source_tile.piece = source_piece
+        dest_tile.piece = dest_piece
+        source_tile.piece.move(source_tile.x, source_tile.y)
 
         return in_check
 
     def make_move(self, source, dest):
+        """
+        Moves piece from source coords to dest coords and makes necessary updates to game state
+        :param source: coordinates of tile that piece is moving from (tuple)
+        :param dest: coordinates of tile that piece is moving to (tuple)
+        :return: None
+        """
 
-        # get shorthand for source and destination tiles
-        sourceTile = self.tilemap[source[0]][source[1]]
-        destTile = self.tilemap[dest[0]][dest[1]]
+        # Get shorthand for source and destination tiles
+        source_tile = self.tilemap[source[0]][source[1]]
+        dest_tile = self.tilemap[dest[0]][dest[1]]
 
-        self.previousState["blackScore"] = self.blackScore
-        self.previousState["whiteScore"] = self.whiteScore
-        self.previousState["blackKingCoords"] = self.blackKingCoords
-        self.previousState["whiteKingCoords"] = self.whiteKingCoords
-        if sourceTile.piece:
-            self.previousState["tile1"] = (source, sourceTile.piece.copy())
-        else:
-            self.previousState["tile1"] = (source, None)
-        if destTile.piece:
-            self.previousState["tile2"] = (dest, destTile.piece.copy())
-        else:
-            self.previousState["tile2"] = (dest, None)
+        # Store previous state to allow for unmaking move
+        previous_state = {"blackScore": self.blackScore,
+                          "whiteScore": self.whiteScore,
+                          "blackKingCoords": self.blackKingCoords,
+                          "whiteKingCoords": self.whiteKingCoords,
+                          "tile1": (source, source_tile.copy()),
+                          "tile2": (dest, dest_tile.copy()),
+                          "bottomPlayerTurn": self.bottomPlayerTurn,
+                          "turn": self.turn,
+                          "gameover": self.gameover
+                          }
+        self.past_moves.append(previous_state)
 
-        # update scores
-        if destTile.piece:
+        # Update scores
+        if dest_tile.piece:
             if self.turn == WHITE:
-                self.blackScore -= self.values[type(destTile.piece)]
+                self.blackScore -= self.values[type(dest_tile.piece)]
             else:
-                self.whiteScore -= self.values[type(destTile.piece)]
+                self.whiteScore -= self.values[type(dest_tile.piece)]
 
-        # promote piece if it meets requirements
-        if type(sourceTile.piece) is Pawn:
-            if sourceTile.piece.color == WHITE and destTile.y == 0 \
-                    or sourceTile.piece.color == BLACK and destTile.y == 7:
-                sourceTile.piece = Queen(sourceTile.piece.x, sourceTile.piece.y, sourceTile.piece.color)
+        # Promote piece if it meets requirements
+        if type(source_tile.piece) is Pawn:
+            if (self.bottomPlayerTurn and dest_tile.y == 0) or (not self.bottomPlayerTurn and dest_tile.y == 7):
+                source_tile.piece = Queen(source_tile.piece.x, source_tile.piece.y, source_tile.piece.color)
 
-        # move piece from source tile to dest tile
-        destTile.piece = sourceTile.piece
-        sourceTile.piece.move(destTile.x, destTile.y)
-        destTile.piece.firstMove = False
+        # Move piece from source tile to dest tile
+        dest_tile.piece = source_tile.piece
+        source_tile.piece.move(dest_tile.x, dest_tile.y)
+        dest_tile.piece.firstMove = False
 
-        # update king coords if necessary
-        if type(sourceTile.piece) is King:
-            if sourceTile.piece.color == BLACK:
-                self.blackKingCoords = destTile.x, destTile.y
+        # Update king coords if necessary
+        if type(source_tile.piece) is King:
+            if source_tile.piece.color == BLACK:
+                self.blackKingCoords = dest_tile.x, dest_tile.y
             else:
-                self.whiteKingCoords = destTile.x, destTile.y
+                self.whiteKingCoords = dest_tile.x, dest_tile.y
 
-        # remove piece from source tile
-        sourceTile.piece = None
-        sourceTile.fill(sourceTile.color)
+        # Remove piece from source tile
+        source_tile.piece = None
+        source_tile.fill(source_tile.color)
 
+        # Check win conditions
         self.checkmate()
         self.check_win_conditions()
 
     def unmake_move(self):
-        self.blackScore = self.previousState["blackScore"]
-        self.whiteScore = self.previousState["whiteScore"]
-        self.blackKingCoords = self.previousState["blackKingCoords"]
-        self.whiteKingCoords = self.previousState["whiteKingCoords"]
-        x = self.previousState["tile1"][0][0]
-        y = self.previousState["tile1"][0][1]
-        self.tilemap[x][y].piece = self.previousState["tile1"][1]
-        x = self.previousState["tile2"][0][0]
-        y = self.previousState["tile2"][0][1]
-        self.tilemap[x][y].piece = self.previousState["tile2"][1]
-        self.gameover = None
+        """
+        Undoes previous move; restores game state
+        :return: None
+        """
+        # Revert to previous game state using stored values
+        previous_state = self.past_moves.pop()
+        self.blackScore = previous_state["blackScore"]
+        self.whiteScore = previous_state["whiteScore"]
+        self.blackKingCoords = previous_state["blackKingCoords"]
+        self.whiteKingCoords = previous_state["whiteKingCoords"]
+        x = previous_state["tile1"][0][0]
+        y = previous_state["tile1"][0][1]
+        self.tilemap[x][y] = previous_state["tile1"][1]
+        x = previous_state["tile2"][0][0]
+        y = previous_state["tile2"][0][1]
+        self.tilemap[x][y] = previous_state["tile2"][1]
+        self.bottomPlayerTurn = previous_state["bottomPlayerTurn"]
+        self.turn = previous_state["turn"]
+        self.gameover = previous_state["gameover"]
+
+        self.checkmate()
+        self.check_win_conditions()
 
     def can_castle(self, color) -> list:
         """
-        returns list of castling moves if player of specified color can castle
+        Returns list of castling moves if player of specified color can castle
         :param color: color of player to check castling ability
         :return: list
         """
         moves = []
         if color == WHITE:
-            # make sure pieces are Rook/King, positions are correct, and that it is their first move
+            # Make sure pieces are Rook/King, positions are correct, and that it is their first move
             if type(self.tilemap[4][7].piece) is King and self.tilemap[4][7].piece.firstMove:
-                # castle left
+                # Castle left
                 if type(self.tilemap[0][7].piece) is Rook and self.tilemap[0][7].piece.firstMove \
                         and self.tilemap[1][7].piece == self.tilemap[2][7].piece == self.tilemap[3][7].piece is None:
                     moves.append((2, 7))
-                # castle right
+                # Castle right
                 if type(self.tilemap[7][7].piece) is Rook and self.tilemap[7][7].piece.firstMove \
                         and self.tilemap[5][7].piece == self.tilemap[6][7].piece is None:
                     moves.append((6, 7))
         else:
-            # make sure pieces are Rook/King, positions are correct, and that it is their first move
+            # Make sure pieces are Rook/King, positions are correct, and that it is their first move
             if type(self.tilemap[4][0].piece) is King and self.tilemap[4][0].piece.firstMove:
-                # castle left
+                # Castle left
                 if type(self.tilemap[0][0].piece) is Rook and self.tilemap[0][0].piece.firstMove \
                         and self.tilemap[1][0].piece == self.tilemap[2][0].piece == self.tilemap[3][0].piece is None:
                     moves.append((2, 0))
-                # castle right
+                # Castle right
                 if type(self.tilemap[7][0].piece) is Rook and self.tilemap[7][0].piece.firstMove \
                         and self.tilemap[5][0].piece == self.tilemap[6][0].piece is None:
                     moves.append((6, 0))
@@ -531,7 +495,7 @@ class Board:
 
     def next_turn(self) -> None:
         """
-        switches turn of board to the other player
+        Switches turn of board to the other player
         :return: None
         """
         if self.turn == WHITE:
@@ -543,34 +507,32 @@ class Board:
 
     def checkmate(self) -> bool:
         """
-        checks for checkmate or stalemate status of board
+        Checks for checkmate or stalemate status of board
         :return: None
         """
+
         legal_moves = 0
         for x in range(8):
             for y in range(8):
-                if self.piece_at_coords((x, y)) and self.tilemap[x][y].piece.color != self.turn:
-                    moves = self.tilemap[x][y].piece.valid_moves(self) + self.can_castle(self.tilemap[x][y].piece.color)
+                if self.piece_at_coords((x, y)) and self.tilemap[x][y].piece.color == self.turn:
+                    moves = self.tilemap[x][y].piece.valid_moves(self)  # + self.can_castle(self.tilemap[x][y].piece.color)
                     for move in moves:
-                        if not self.in_check_after_move((self.tilemap[x][y].piece.x, self.tilemap[x][y].piece.y), move, self.tilemap[x][y].piece.color):
+                        if not self.in_check_after_move((x, y), move, self.tilemap[x][y].piece.color):
                             legal_moves += 1
-        opponent = None
+
         if self.turn == WHITE:
             opponent = BLACK
         else:
             opponent = WHITE
 
-        if legal_moves == 0 and not self.in_check(opponent):
-            print("GAME OVER: Stalemate")
+        if legal_moves == 0 and not self.in_check(self.turn):
             self.gameover = ("Stalemate", None)
         elif legal_moves == 0:
-            print("GAME OVER: Checkmate")
-            self.gameover = ("Checkmate", self.turn)
-        return legal_moves
+            self.gameover = ("Checkmate", opponent)
 
     def get_moves(self):
         """
-        returns a list of the available moves for the current player
+        Returns a list of the available moves for the current player
         :return: list
         """
         moves = []
@@ -579,11 +541,18 @@ class Board:
                 if self.piece_at_coords((x, y)) and self.tilemap[x][y].piece.color == self.turn:
                     for move in self.tilemap[x][y].piece.valid_moves(self):
                         if not self.in_check_after_move((x, y), move, self.turn):
+                            # if self.enemy_at_coords(move, self.turn):
+                            #     moves.insert(0, ((x, y), move))
+                            # else:
+                            #     moves.append(((x, y), move))
                             moves.append(((x, y), move))
-        #moves += self.can_castle(self.turn)
-        return list(set(moves))
+        return moves
 
     def get_moves_sorted(self):
+        """
+        Returns a list of the available moves sorted in descending order by value for the current player
+        :return: list
+        """
         b = self.copy()
         moves = {}
         for x in range(8):
@@ -598,7 +567,7 @@ class Board:
 
     def check_win_conditions(self):
         # Insufficient material
-        piece_counts = {"wminor": 0, "bminor": 0, "king": 0, "wknight": 0, "bknight":0}
+        piece_counts = {"wminor": 0, "bminor": 0, "king": 0, "wknight": 0, "bknight": 0}
         for x in range(8):
             for y in range(8):
                 piece = self.tilemap[x][y].piece
@@ -631,6 +600,5 @@ class Board:
             print("four")
             self.gameover = ("Insufficient Material", None)
 
-        # TEMPORARY
-        elif piece_counts["wminor"] == 1:
-            self.gameover = ("TESTING", None)
+        # elif piece_counts["wminor"] < 3:
+        #     self.gameover = ("TESTING", None)
