@@ -1,7 +1,5 @@
 from math import inf
-
 import pygame_menu
-
 import queue
 import sys
 import threading
@@ -41,15 +39,26 @@ class Game:
         self.board.initialize_pieces()
 
         self.menu_screen()
-        #self.TEST_SCREEN()
+        # self.test_screen()
 
     def test_screen(self):
-
-        running = True
+        """
+        Used for debugging move sequences that cause problems
+        :return: None
+        """
 
         self.reset()
 
-        moves = [((6, 7), (7, 5)), ((7, 1), (7, 3)), ((1, 6), (1, 5)), ((2, 1), (2, 2)), ((7, 7), (6, 7)), ((3, 0), (2, 1)), ((1, 5), (1, 4)), ((2, 1), (7, 6)), ((2, 6), (2, 5)), ((7, 6), (6, 7)), ((7, 5), (5, 4)), ((6, 7), (5, 7)), ((4, 7), (5, 7)), ((4, 0), (3, 0)), ((5, 4), (3, 3)), ((2, 2), (3, 3)), ((1, 7), (0, 5)), ((3, 0), (2, 1)), ((5, 6), (5, 4)), ((2, 1), (2, 2)), ((2, 5), (2, 4)), ((3, 3), (2, 4)), ((0, 7), (1, 7)), ((2, 2), (3, 2)), ((4, 6), (4, 4)), ((3, 2), (4, 2)), ((5, 4), (5, 3)), ((4, 2), (3, 2)), ((3, 7), (0, 4)), ((3, 2), (4, 3)), ((3, 6), (3, 4)), ((4, 3), (4, 4)), ((2, 7), (3, 6)), ((4, 4), (3, 4)), ((0, 4), (0, 1)), ((0, 0), (0, 1)), ((0, 5), (2, 6)), ((3, 4), (4, 4)), ((1, 7), (1, 5)), ((2, 4), (1, 5)), ((3, 6), (4, 5)), ((1, 5), (2, 6)), ((0, 6), (0, 5)), ((4, 4), (4, 5)), ((5, 7), (4, 7)), ((0, 1), (0, 5)), ((5, 3), (5, 2)), ((4, 1), (5, 2))]
+        moves = [((6, 7), (7, 5)), ((7, 1), (7, 3)), ((1, 6), (1, 5)), ((2, 1), (2, 2)), ((7, 7), (6, 7)),
+                 ((3, 0), (2, 1)), ((1, 5), (1, 4)), ((2, 1), (7, 6)), ((2, 6), (2, 5)), ((7, 6), (6, 7)),
+                 ((7, 5), (5, 4)), ((6, 7), (5, 7)), ((4, 7), (5, 7)), ((4, 0), (3, 0)), ((5, 4), (3, 3)),
+                 ((2, 2), (3, 3)), ((1, 7), (0, 5)), ((3, 0), (2, 1)), ((5, 6), (5, 4)), ((2, 1), (2, 2)),
+                 ((2, 5), (2, 4)), ((3, 3), (2, 4)), ((0, 7), (1, 7)), ((2, 2), (3, 2)), ((4, 6), (4, 4)),
+                 ((3, 2), (4, 2)), ((5, 4), (5, 3)), ((4, 2), (3, 2)), ((3, 7), (0, 4)), ((3, 2), (4, 3)),
+                 ((3, 6), (3, 4)), ((4, 3), (4, 4)), ((2, 7), (3, 6)), ((4, 4), (3, 4)), ((0, 4), (0, 1)),
+                 ((0, 0), (0, 1)), ((0, 5), (2, 6)), ((3, 4), (4, 4)), ((1, 7), (1, 5)), ((2, 4), (1, 5)),
+                 ((3, 6), (4, 5)), ((1, 5), (2, 6)), ((0, 6), (0, 5)), ((4, 4), (4, 5)), ((5, 7), (4, 7)),
+                 ((0, 1), (0, 5)), ((5, 3), (5, 2)), ((4, 1), (5, 2))]
 
         i = 0
         for move in moves:
@@ -66,7 +75,6 @@ class Game:
 
             self.board.make_move(move[0], move[1])
             self.board.next_turn()
-
             self.board.tilemap[move[1][0]][move[1][1]].fill(self.board.tilemap[move[1][0]][move[1][1]].color)
 
             if self.board.gameover:
@@ -82,13 +90,12 @@ class Game:
         self.board.print()
 
         # Test screen loop
-        while running:
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
-
+                    pygame.quit()
+                    exit()
             self.board.draw()
-
             pygame.display.flip()
 
     def reset(self):
@@ -99,6 +106,8 @@ class Game:
         self.p2_name = "Minimax"
         self.p1_timer.reset()
         self.p2_timer.reset()
+        self.p1_color = WHITE
+        self.p2_color = BLACK
         self.board = Board(self.p1_color)
         self.board.initialize_pieces()
         self.ai_move = queue.Queue()
@@ -168,7 +177,8 @@ class Game:
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
+                    exit()
 
             menu.mainloop(SCREEN)
 
@@ -181,7 +191,7 @@ class Game:
         """
         # Determine move based on selected AI
         if self.p2_name == "Minimax":
-            self.ai_move.put(AI.minimax2(self.board.copy(), 1, -inf, inf, True, self.p2_color)[0])
+            self.ai_move.put(AI.minimax(self.board.copy(), 3, -inf, inf, True, self.p2_color)[0])
         else:
             self.ai_move.put(AI.random_move(self.board))
 
@@ -207,7 +217,8 @@ class Game:
         p1_resigned = False
 
         # Creates collision box for resign button
-        resign_button = pygame.Rect(BOARD_X+BOARD_SIZE+8, BOARD_Y+BOARD_SIZE+8, int((TILE_SIZE*4+8)/2-4), 28)
+        resign_button = pygame.Rect(BOARD_X + BOARD_SIZE + 8, BOARD_Y + BOARD_SIZE + 8,
+                                    int((TILE_SIZE * 4 + 8) / 2 - 4), 28)
 
         # Game screen loop
         while True:
@@ -242,6 +253,10 @@ class Game:
             self.p1_timer.draw()
             self.p2_timer.draw()
             self.draw_resign_button()
+
+            # Check for endgame state
+            self.board.checkmate_stalemate()
+            self.board.insufficient_material()
 
             # GAME OVER: Checkmate, Stalemate, or Insufficient Material
             if self.board.gameover:
@@ -284,11 +299,6 @@ class Game:
                 t.start()
             self.lock.release()
 
-            if self.board.turn == self.p1_color:
-                move = AI.random_move(self.board)
-                self.board.make_move(move[0], move[1])
-                self.board.next_turn()
-
             # Tell AI to make their move if...
             # 1 - It is their turn
             # 2 - They found a move
@@ -309,6 +319,12 @@ class Game:
             # Update display
             pygame.display.flip()
 
+            # Self-play
+            # if self.board.turn == self.p1_color:
+            #     move = AI.random_move(self.board)
+            #     self.board.make_move(move[0], move[1])
+            #     self.board.next_turn()
+
     def end_screen(self, condition, winner=None):
         """
         Displays end screen
@@ -318,11 +334,11 @@ class Game:
         """
 
         # Create background for end screen
-        bg = pygame.Rect(int(BOARD_X+TILE_SIZE*2.5), int(BOARD_Y+TILE_SIZE*2.5), TILE_SIZE*3, TILE_SIZE*2)
+        bg = pygame.Rect(int(BOARD_X + TILE_SIZE * 2.5), int(BOARD_Y + TILE_SIZE * 2.5), TILE_SIZE * 3, TILE_SIZE * 2)
 
         # Creates collision boxes for rematch and leave buttons
-        rematch_button = pygame.Rect(bg.left, bg.bottom-28, bg.centerx-bg.left-2, 28)
-        leave_button = pygame.Rect(bg.centerx+2, bg.bottom-28, bg.centerx-bg.left-2, 28)
+        rematch_button = pygame.Rect(bg.left, bg.bottom - 28, bg.centerx - bg.left - 2, 28)
+        leave_button = pygame.Rect(bg.centerx + 2, bg.bottom - 28, bg.centerx - bg.left - 2, 28)
 
         # Creates fade transitional effect for end screen
         def fade(width, height):
@@ -371,9 +387,9 @@ class Game:
             pygame.display.flip()
 
             # Self-play
-            time.sleep(1)
-            self.reset()
-            return self.game_screen()
+            # time.sleep(1)
+            # self.reset()
+            # return self.game_screen()
 
     def draw_names(self):
         """
@@ -381,13 +397,13 @@ class Game:
         :return: None
         """
         # Draw top name (player 2)
-        pygame.draw.rect(SCREEN, BG_COLOR_LIGHT, [BOARD_X, BOARD_Y - 36, TILE_SIZE*2, 28])
+        pygame.draw.rect(SCREEN, BG_COLOR_LIGHT, [BOARD_X, BOARD_Y - 36, TILE_SIZE * 2, 28])
         p1name = FONT.render(self.p2_name, True, SMALL_TEXT_COLOR)
-        SCREEN.blit(p1name, (BOARD_X+4, BOARD_Y - 34))
+        SCREEN.blit(p1name, (BOARD_X + 4, BOARD_Y - 34))
         # Draw bottom name (player 1)
-        pygame.draw.rect(SCREEN, BG_COLOR_LIGHT, [BOARD_X, BOARD_Y+BOARD_SIZE+8, TILE_SIZE*2, 28])
+        pygame.draw.rect(SCREEN, BG_COLOR_LIGHT, [BOARD_X, BOARD_Y + BOARD_SIZE + 8, TILE_SIZE * 2, 28])
         p2name = FONT.render(self.p1_name, True, SMALL_TEXT_COLOR)
-        SCREEN.blit(p2name, (BOARD_X+4, BOARD_Y+BOARD_SIZE+10))
+        SCREEN.blit(p2name, (BOARD_X + 4, BOARD_Y + BOARD_SIZE + 10))
 
     def draw_turn_indicator(self):
         """
@@ -396,27 +412,29 @@ class Game:
         """
         if self.board.turn == self.p1_color:
             txt = FONT.render("YOUR TURN", True, LARGE_TEXT_COLOR)
-            SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 3.5 + 8), BOARD_Y+BOARD_SIZE+10))
+            SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 3.5 + 8), BOARD_Y + BOARD_SIZE + 10))
         else:
             txt = FONT.render("AI is thinking...", True, LARGE_TEXT_COLOR)
-            SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 3.5 + 8), BOARD_Y+BOARD_SIZE+10))
+            SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 3.5 + 8), BOARD_Y + BOARD_SIZE + 10))
 
-    def draw_resign_button(self):
+    @staticmethod
+    def draw_resign_button():
         """
         Draws resign button in game screen
-        :return:
+        :return: None
         """
         pygame.draw.rect(SCREEN, BG_COLOR_LIGHT, [BOARD_X + BOARD_SIZE + 8, BOARD_Y + BOARD_SIZE + 8,
-                                        int((TILE_SIZE * 4 + 8) / 2 - 4), 28])
+                                                  int((TILE_SIZE * 4 + 8) / 2 - 4), 28])
         txt = FONT.render("Resign", True, SMALL_TEXT_COLOR)
-        SCREEN.blit(txt, (BOARD_X + BOARD_SIZE + 40, BOARD_Y+BOARD_SIZE+10))
+        SCREEN.blit(txt, (BOARD_X + BOARD_SIZE + 40, BOARD_Y + BOARD_SIZE + 10))
 
-    def draw_end_message(self, condition, winner):
+    @staticmethod
+    def draw_end_message(condition, winner):
         """
         Draws end message in end screen
         :param condition: string representing win condition that ended the game (str)
         :param winner: name of winner if applicable (str)
-        :return:
+        :return: None
         """
         # Draw 'Game Over' text
         bg = pygame.draw.rect(SCREEN, BG_COLOR_LIGHT,

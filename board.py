@@ -32,7 +32,7 @@ class Board:
         print("blackKingCoords:  ", self.blackKingCoords)
         print("whiteKingCoords:  ", self.whiteKingCoords)
         print("Turn:             ", self.turn)
-        print("CanMoveCount:     ", self.checkmate())
+        print("CanMoveCount:     ", self.checkmate_stalemate())
         print("InCheck:          ", self.in_check(self.turn))
         print("Player:           ", self.player)
         print("BottomPlayerTurn: ", self.bottomPlayerTurn)
@@ -433,8 +433,8 @@ class Board:
         source_tile.fill(source_tile.color)
 
         # Check win conditions
-        self.checkmate()
-        self.check_win_conditions()
+        self.checkmate_stalemate()
+        self.insufficient_material()
 
     def unmake_move(self):
         """
@@ -500,7 +500,7 @@ class Board:
 
         self.bottomPlayerTurn = not self.bottomPlayerTurn
 
-    def checkmate(self) -> bool:
+    def checkmate_stalemate(self) -> bool:
         """
         Checks for checkmate or stalemate status of board
         :return: None
@@ -559,7 +559,7 @@ class Board:
                             b.unmake_move()
         return [move for move, score in sorted(moves.items(), key=lambda v: v[1], reverse=True)]
 
-    def check_win_conditions(self):
+    def insufficient_material(self):
         # Insufficient material
         piece_counts = {"wminor": 0, "bminor": 0, "king": 0, "wknight": 0, "bknight": 0}
         for x in range(8):
@@ -594,5 +594,6 @@ class Board:
             print("four")
             self.gameover = ("Insufficient Material", None)
 
+        # Self-play
         # elif piece_counts["wminor"] < 3:
         #     self.gameover = ("TESTING", None)
