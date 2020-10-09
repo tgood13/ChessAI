@@ -1,8 +1,7 @@
-# Good-Chess
-Note: The 'Good' in 'Good Chess' is there because it is my last name!
+# ChessAI
 
 ## Description
-A singleplayer chess game where players can enter their name, select their color, and select which AI to play against. To create visual representations the chess pieces, I handcrafted each of them pixel by pixel.
+A singleplayer chess game where players can enter their name, select their color, and play against an AI. To create visual representations the chess pieces, I drew each of them myself using pixelart.com.
 
 ## Required:
 - Python 3.x
@@ -13,7 +12,7 @@ A singleplayer chess game where players can enter their name, select their color
 ### Main Objects
 - Piece = an abstract base class from which all board pieces are derived (King, Queen, Bishop, Knight, Rook, Pawn)
 - Tile = a class which represents a single cell on the chess board; each tile may or may not contain a piece
-- Board = a class which contains all game states necessary to ensure proper game functioning, and most importantly, it contains a tilemap atrribute which consists of all the tiles contained within the board
+- Board = a class which tracks all values necessary to ensure proper game functioning, and most importantly, it contains a tilemap atrribute which consists of all the tiles contained within the board
 
 ### Minimax AI
 - Determines best move for the current turn by considering future game states resulting from a move
@@ -36,4 +35,5 @@ A singleplayer chess game where players can enter their name, select their color
 
 ## Known Bugs
 - No En passant rule for pawns
-- AI moves too quickly which makes the timers unfair in a Human vs AI matchup
+- No castling
+- Rare crash when determining move for AI
