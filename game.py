@@ -454,7 +454,10 @@ class Game:
             SCREEN.blit(txt, (BOARD_X + TILE_SIZE * 3, int(BOARD_Y + TILE_SIZE * 3.4)))
         else:
             txt = FONT.render(f"{condition}", True, SMALL_TEXT_COLOR)
-            SCREEN.blit(txt, (BOARD_X + TILE_SIZE * 3 + 32, BOARD_Y + TILE_SIZE * 3))
+            if condition == "Insufficient Material":
+                SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 2.55), int(BOARD_Y + TILE_SIZE * 3.3)))
+            else:
+                SCREEN.blit(txt, (int(BOARD_X + TILE_SIZE * 3.2), int(BOARD_Y + TILE_SIZE * 3.3)))
 
         # Draw Rematch button
         pygame.draw.rect(SCREEN, BLACK, [bg.left, bg.bottom - 28, bg.centerx - bg.left + 3, 28], 1)

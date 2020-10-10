@@ -580,18 +580,14 @@ class Board:
 
         # King vs King
         if piece_counts["wminor"] == piece_counts["bminor"] == piece_counts["wknight"] == piece_counts["bknight"] == 0 and piece_counts["king"] == 2:
-            print("one")
             self.gameover = ("Insufficient Material", None)
         # King + minor piece vs King
         elif ((piece_counts["wminor"] == 1 and piece_counts["bminor"] == 0) or (piece_counts["bminor"] == 1 and piece_counts["wminor"] == 0)) and piece_counts["king"] == 2 and piece_counts["bknight"] == piece_counts["wknight"] == 0:
-            print("two")
             self.gameover = ("Insufficient Material", None)
         # King + two Knights vs King
         elif (piece_counts["wknight"] == 2 and piece_counts["king"] == 2 and piece_counts["wminor"] == piece_counts["bminor"] == 0) or (piece_counts["bknight"] == 2 and piece_counts["king"] == 2 and piece_counts["wminor"] == piece_counts["bminor"] == 0):
-            print("three")
             self.gameover = ("Insufficient Material", None)
         elif (piece_counts["wminor"] == 1 and piece_counts["king"] == 2 and piece_counts["bminor"] == 0) or (piece_counts["bminor"] == 1 and piece_counts["king"] == 2 and piece_counts["wminor"] == 0):
-            print("four")
             self.gameover = ("Insufficient Material", None)
 
         # Self-play
