@@ -21,7 +21,7 @@ class Board:
             self.bottomPlayerTurn = False
         self.gameover = None
 
-        self.values = {King: 900, Queen: 90, Rook: 50, Bishop: 30, Knight: 30, Pawn: 10}
+        self.weights = {King: 900, Queen: 90, Rook: 50, Bishop: 30, Knight: 30, Pawn: 10}
         self.blackScore = 1290
         self.whiteScore = 1290
 
@@ -251,7 +251,7 @@ class Board:
         copy.bottomPlayerTurn = self.bottomPlayerTurn
         copy.player = self.player
         copy.gameover = self.gameover
-        copy.values = self.values
+        copy.weights = self.weights
         copy.blackScore = self.blackScore
         copy.whiteScore = self.whiteScore
         return copy
@@ -407,9 +407,9 @@ class Board:
         # Update scores
         if dest_tile.piece:
             if self.turn == WHITE:
-                self.blackScore -= self.values[type(dest_tile.piece)]
+                self.blackScore -= self.weights[type(dest_tile.piece)]
             else:
-                self.whiteScore -= self.values[type(dest_tile.piece)]
+                self.whiteScore -= self.weights[type(dest_tile.piece)]
 
         # Promote piece if it meets requirements
         if type(source_tile.piece) is Pawn:
@@ -566,6 +566,9 @@ class Board:
             for y in range(8):
                 piece = self.tilemap[x][y].piece
                 if piece:
+                    # if a Queen is present, insufficient material is impossible
+                    if type(piece) is Queen:
+                        return
                     if type(piece) is King:
                         piece_counts["king"] += 1
                     elif type(piece) is Knight and piece.color == WHITE:
@@ -575,7 +578,7 @@ class Board:
                     else:
                         if piece.color == WHITE:
                             piece_counts["wminor"] += 1
-                        else:
+                        elif piece.color == BLACK:
                             piece_counts["bminor"] += 1
 
         # King vs King

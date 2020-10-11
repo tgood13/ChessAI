@@ -79,7 +79,7 @@ class Game:
 
             if self.board.gameover:
                 print("GAME OVER: ", self.board.gameover[0])
-                if self.board.gameover[0] == "Insufficient Material":
+                if self.board.gameover[0] == "Insufficient Material" or self.board.gameover[0] == "Stalemate":
                     self.end_screen(self.board.gameover[0], None)
                 else:
                     if self.board.gameover[1] == self.board.player:
@@ -261,7 +261,7 @@ class Game:
             # GAME OVER: Checkmate, Stalemate, or Insufficient Material
             if self.board.gameover:
                 print("GAME OVER: ", self.board.gameover[0])
-                if self.board.gameover[0] == "Insufficient Material":
+                if self.board.gameover[0] == "Insufficient Material" or self.board.gameover[0] == "Stalemate":
                     return self.end_screen(self.board.gameover[0], None)
                 else:
                     if self.board.gameover[1] == self.board.player:
