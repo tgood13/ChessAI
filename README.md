@@ -36,4 +36,3 @@ A singleplayer chess game where players can enter their name, select their color
 ## Known Bugs
 - No En passant rule for pawns
 - No castling
-- Rare crash when determining move for AI
