@@ -23,6 +23,8 @@ A singleplayer chess game where players can enter their name, select their color
 ### Random AI
 - Randomly selects a move from its available valid moves
 
+Video explaining AI implementation: [![thumbnail](https://yt-embed.herokuapp.com/embed?v=-ivz8yJ4l4E)](https://youtu.be/-ivz8yJ4l4E)
+
 ## How it looks
 ### Menu Screen
 ![Menu Screen](https://i.paste.pics/fb89c6ccc7b403a7c3d9bb9bbd18515b.png)
